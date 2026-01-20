@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Tue Jan  6 18:11:10 2026
+Quartus Prime Version : 23.1std.1 Build 993 05/14/2024 SC Lite Edition
+Revision Name : reg_file
+Top-level Entity Name : reg_file
+Family : Cyclone 10 LP
+Total logic elements : 0
+    Total combinational functions : 0
+    Dedicated logic registers : 0
+Total registers : 0
+Total pins : 113
+Total virtual pins : 0
+Total memory bits : 2,048
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 0

@@ -1,0 +1,414 @@
+Analysis & Synthesis report for top
+Tue Jan 20 21:01:20 2026
+Quartus Prime Version 23.1std.1 Build 993 05/14/2024 SC Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Analysis & Synthesis Summary
+  3. Analysis & Synthesis Settings
+  4. Parallel Compilation
+  5. Parameter Settings for User Entity Instance: rca:adder1
+  6. Parameter Settings for User Entity Instance: prog_count:Program_counter
+  7. Parameter Settings for User Entity Instance: instruction_mem:Instruction_MEM
+  8. Parameter Settings for User Entity Instance: reg_file:Reg_file
+  9. Parameter Settings for User Entity Instance: rca:adder2
+ 10. Parameter Settings for User Entity Instance: data_mem:Data_MEM
+ 11. Port Connectivity Checks: "data_mem:Data_MEM"
+ 12. Port Connectivity Checks: "rca:adder2"
+ 13. Port Connectivity Checks: "instruction_mem:Instruction_MEM"
+ 14. Port Connectivity Checks: "prog_count:Program_counter"
+ 15. Port Connectivity Checks: "rca:adder1"
+ 16. Analysis & Synthesis Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2024  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details, at
+https://fpgasoftware.intel.com/eula.
+
+
+
++-------------------------------------------------------------------------------------+
+; Analysis & Synthesis Summary                                                        ;
++------------------------------------+------------------------------------------------+
+; Analysis & Synthesis Status        ; Failed - Tue Jan 20 21:01:20 2026              ;
+; Quartus Prime Version              ; 23.1std.1 Build 993 05/14/2024 SC Lite Edition ;
+; Revision Name                      ; top                                            ;
+; Top-level Entity Name              ; top                                            ;
+; Family                             ; Cyclone IV E                                   ;
+; Total logic elements               ; N/A until Partition Merge                      ;
+;     Total combinational functions  ; N/A until Partition Merge                      ;
+;     Dedicated logic registers      ; N/A until Partition Merge                      ;
+; Total registers                    ; N/A until Partition Merge                      ;
+; Total pins                         ; N/A until Partition Merge                      ;
+; Total virtual pins                 ; N/A until Partition Merge                      ;
+; Total memory bits                  ; N/A until Partition Merge                      ;
+; Embedded Multiplier 9-bit elements ; N/A until Partition Merge                      ;
+; Total PLLs                         ; N/A until Partition Merge                      ;
++------------------------------------+------------------------------------------------+
+
+
++------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Settings                                                                              ;
++------------------------------------------------------------------+--------------------+--------------------+
+; Option                                                           ; Setting            ; Default Value      ;
++------------------------------------------------------------------+--------------------+--------------------+
+; Device                                                           ; EP4CE6E22C8        ;                    ;
+; Top-level entity name                                            ; top                ; top                ;
+; Family name                                                      ; Cyclone IV E       ; Cyclone V          ;
+; Use smart compilation                                            ; Off                ; Off                ;
+; Enable parallel Assembler and Timing Analyzer during compilation ; On                 ; On                 ;
+; Enable compact report table                                      ; Off                ; Off                ;
+; Restructure Multiplexers                                         ; Auto               ; Auto               ;
+; Create Debugging Nodes for IP Cores                              ; Off                ; Off                ;
+; Preserve fewer node names                                        ; On                 ; On                 ;
+; Intel FPGA IP Evaluation Mode                                    ; Enable             ; Enable             ;
+; Verilog Version                                                  ; Verilog_2001       ; Verilog_2001       ;
+; VHDL Version                                                     ; VHDL_1993          ; VHDL_1993          ;
+; State Machine Processing                                         ; Auto               ; Auto               ;
+; Safe State Machine                                               ; Off                ; Off                ;
+; Extract Verilog State Machines                                   ; On                 ; On                 ;
+; Extract VHDL State Machines                                      ; On                 ; On                 ;
+; Ignore Verilog initial constructs                                ; Off                ; Off                ;
+; Iteration limit for constant Verilog loops                       ; 5000               ; 5000               ;
+; Iteration limit for non-constant Verilog loops                   ; 250                ; 250                ;
+; Add Pass-Through Logic to Inferred RAMs                          ; On                 ; On                 ;
+; Infer RAMs from Raw Logic                                        ; On                 ; On                 ;
+; Parallel Synthesis                                               ; On                 ; On                 ;
+; DSP Block Balancing                                              ; Auto               ; Auto               ;
+; NOT Gate Push-Back                                               ; On                 ; On                 ;
+; Power-Up Don't Care                                              ; On                 ; On                 ;
+; Remove Redundant Logic Cells                                     ; Off                ; Off                ;
+; Remove Duplicate Registers                                       ; On                 ; On                 ;
+; Ignore CARRY Buffers                                             ; Off                ; Off                ;
+; Ignore CASCADE Buffers                                           ; Off                ; Off                ;
+; Ignore GLOBAL Buffers                                            ; Off                ; Off                ;
+; Ignore ROW GLOBAL Buffers                                        ; Off                ; Off                ;
+; Ignore LCELL Buffers                                             ; Off                ; Off                ;
+; Ignore SOFT Buffers                                              ; On                 ; On                 ;
+; Limit AHDL Integers to 32 Bits                                   ; Off                ; Off                ;
+; Optimization Technique                                           ; Balanced           ; Balanced           ;
+; Carry Chain Length                                               ; 70                 ; 70                 ;
+; Auto Carry Chains                                                ; On                 ; On                 ;
+; Auto Open-Drain Pins                                             ; On                 ; On                 ;
+; Perform WYSIWYG Primitive Resynthesis                            ; Off                ; Off                ;
+; Auto ROM Replacement                                             ; On                 ; On                 ;
+; Auto RAM Replacement                                             ; On                 ; On                 ;
+; Auto DSP Block Replacement                                       ; On                 ; On                 ;
+; Auto Shift Register Replacement                                  ; Auto               ; Auto               ;
+; Allow Shift Register Merging across Hierarchies                  ; Auto               ; Auto               ;
+; Auto Clock Enable Replacement                                    ; On                 ; On                 ;
+; Strict RAM Replacement                                           ; Off                ; Off                ;
+; Allow Synchronous Control Signals                                ; On                 ; On                 ;
+; Force Use of Synchronous Clear Signals                           ; Off                ; Off                ;
+; Auto RAM Block Balancing                                         ; On                 ; On                 ;
+; Auto RAM to Logic Cell Conversion                                ; Off                ; Off                ;
+; Auto Resource Sharing                                            ; Off                ; Off                ;
+; Allow Any RAM Size For Recognition                               ; Off                ; Off                ;
+; Allow Any ROM Size For Recognition                               ; Off                ; Off                ;
+; Allow Any Shift Register Size For Recognition                    ; Off                ; Off                ;
+; Use LogicLock Constraints during Resource Balancing              ; On                 ; On                 ;
+; Ignore translate_off and synthesis_off directives                ; Off                ; Off                ;
+; Timing-Driven Synthesis                                          ; On                 ; On                 ;
+; Report Parameter Settings                                        ; On                 ; On                 ;
+; Report Source Assignments                                        ; On                 ; On                 ;
+; Report Connectivity Checks                                       ; On                 ; On                 ;
+; Ignore Maximum Fan-Out Assignments                               ; Off                ; Off                ;
+; Synchronization Register Chain Length                            ; 2                  ; 2                  ;
+; Power Optimization During Synthesis                              ; Normal compilation ; Normal compilation ;
+; HDL message level                                                ; Level2             ; Level2             ;
+; Suppress Register Optimization Related Messages                  ; Off                ; Off                ;
+; Number of Removed Registers Reported in Synthesis Report         ; 5000               ; 5000               ;
+; Number of Swept Nodes Reported in Synthesis Report               ; 5000               ; 5000               ;
+; Number of Inverted Registers Reported in Synthesis Report        ; 100                ; 100                ;
+; Clock MUX Protection                                             ; On                 ; On                 ;
+; Auto Gated Clock Conversion                                      ; Off                ; Off                ;
+; Block Design Naming                                              ; Auto               ; Auto               ;
+; SDC constraint protection                                        ; Off                ; Off                ;
+; Synthesis Effort                                                 ; Auto               ; Auto               ;
+; Shift Register Replacement - Allow Asynchronous Clear Signal     ; On                 ; On                 ;
+; Pre-Mapping Resynthesis Optimization                             ; Off                ; Off                ;
+; Analysis & Synthesis Message Level                               ; Medium             ; Medium             ;
+; Disable Register Merging Across Hierarchies                      ; Auto               ; Auto               ;
+; Resource Aware Inference For Block RAM                           ; On                 ; On                 ;
++------------------------------------------------------------------+--------------------+--------------------+
+
+
++------------------------------------------+
+; Parallel Compilation                     ;
++----------------------------+-------------+
+; Processors                 ; Number      ;
++----------------------------+-------------+
+; Number detected on machine ; 12          ;
+; Maximum allowed            ; 6           ;
+;                            ;             ;
+; Average used               ; 1.00        ;
+; Maximum used               ; 1           ;
+;                            ;             ;
+; Usage by Processor         ; % Time Used ;
+;     Processor 1            ; 100.0%      ;
++----------------------------+-------------+
+
+
++---------------------------------------------------------+
+; Parameter Settings for User Entity Instance: rca:adder1 ;
++----------------+-------+--------------------------------+
+; Parameter Name ; Value ; Type                           ;
++----------------+-------+--------------------------------+
+; n              ; 64    ; Signed Integer                 ;
++----------------+-------+--------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++-------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: prog_count:Program_counter ;
++------------------+-------+----------------------------------------------+
+; Parameter Name   ; Value ; Type                                         ;
++------------------+-------+----------------------------------------------+
+; INST_MEMORY_SIZE ; 1024  ; Signed Integer                               ;
+; ADDR_WIDTH       ; 10    ; Signed Integer                               ;
++------------------+-------+----------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++------------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: instruction_mem:Instruction_MEM ;
++------------------+-------+---------------------------------------------------+
+; Parameter Name   ; Value ; Type                                              ;
++------------------+-------+---------------------------------------------------+
+; INST_MEMORY_SIZE ; 1024  ; Signed Integer                                    ;
+; ADDR_WIDTH       ; 10    ; Signed Integer                                    ;
++------------------+-------+---------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++----------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: reg_file:Reg_file ;
++----------------+-------+---------------------------------------+
+; Parameter Name ; Value ; Type                                  ;
++----------------+-------+---------------------------------------+
+; WIDTH          ; 32    ; Signed Integer                        ;
+; ADDR_WIDTH     ; 5     ; Signed Integer                        ;
++----------------+-------+---------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++---------------------------------------------------------+
+; Parameter Settings for User Entity Instance: rca:adder2 ;
++----------------+-------+--------------------------------+
+; Parameter Name ; Value ; Type                           ;
++----------------+-------+--------------------------------+
+; n              ; 64    ; Signed Integer                 ;
++----------------+-------+--------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++----------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: data_mem:Data_MEM ;
++----------------+-------+---------------------------------------+
+; Parameter Name ; Value ; Type                                  ;
++----------------+-------+---------------------------------------+
+; MEMORY_SIZE    ; 2048  ; Signed Integer                        ;
+; ADDR_WIDTH     ; 11    ; Signed Integer                        ;
++----------------+-------+---------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "data_mem:Data_MEM"                                                                                                                                   ;
++--------------+--------+----------+----------------------------------------------------------------------------------------------------------------------------------------------+
+; Port         ; Type   ; Severity ; Details                                                                                                                                      ;
++--------------+--------+----------+----------------------------------------------------------------------------------------------------------------------------------------------+
+; data[31..29] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed.                                                          ;
+; clk          ; Input  ; Warning  ; Declared by entity but not connected by instance. If a default value exists, it will be used.  Otherwise, the port will be connected to GND. ;
++--------------+--------+----------+----------------------------------------------------------------------------------------------------------------------------------------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "rca:adder2"                                                                                                                                        ;
++-----------+--------+----------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+; Port      ; Type   ; Severity ; Details                                                                                                                                       ;
++-----------+--------+----------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+; x         ; Input  ; Warning  ; Input port expression (32 bits) is smaller than the input port (64 bits) it drives.  Extra input bit(s) "x[63..32]" will be connected to GND. ;
+; c_in      ; Input  ; Info     ; Stuck at GND                                                                                                                                  ;
+; s[63..32] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed.                                                           ;
+; c_out     ; Output ; Info     ; Explicitly unconnected                                                                                                                        ;
++-----------+--------+----------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+
+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "instruction_mem:Instruction_MEM"                                                                                                                                                   ;
++------+-------+----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Port ; Type  ; Severity ; Details                                                                                                                                                                             ;
++------+-------+----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; addr ; Input ; Warning  ; Input port expression (32 bits) is wider than the input port (10 bits) it drives.  The 22 most-significant bit(s) in the expression will be dangling if they have no other fanouts. ;
++------+-------+----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "prog_count:Program_counter"                                                                                                                                                         ;
++-----------------+--------+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Port            ; Type   ; Severity ; Details                                                                                                                                                                  ;
++-----------------+--------+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; addr_in         ; Input  ; Warning  ; Input port expression (32 bits) is smaller than the input port (64 bits) it drives.  Extra input bit(s) "addr_in[63..32]" will be connected to GND.                      ;
+; addr_2_INST_MEM ; Output ; Warning  ; Output or bidir port (10 bits) is smaller than the port expression (32 bits) it drives.  The 22 most-significant bit(s) in the port expression will be connected to GND. ;
++-----------------+--------+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
++---------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "rca:adder1"                                                                              ;
++-----------+--------+----------+-------------------------------------------------------------------------------------+
+; Port      ; Type   ; Severity ; Details                                                                             ;
++-----------+--------+----------+-------------------------------------------------------------------------------------+
+; x[63..3]  ; Input  ; Info     ; Stuck at GND                                                                        ;
+; x[1..0]   ; Input  ; Info     ; Stuck at GND                                                                        ;
+; x[2]      ; Input  ; Info     ; Stuck at VCC                                                                        ;
+; c_in      ; Input  ; Info     ; Stuck at GND                                                                        ;
+; s[63..32] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; c_out     ; Output ; Info     ; Explicitly unconnected                                                              ;
++-----------+--------+----------+-------------------------------------------------------------------------------------+
+
+
++-------------------------------+
+; Analysis & Synthesis Messages ;
++-------------------------------+
+Info: *******************************************************************
+Info: Running Quartus Prime Analysis & Synthesis
+    Info: Version 23.1std.1 Build 993 05/14/2024 SC Lite Edition
+    Info: Copyright (C) 2024  Intel Corporation. All rights reserved.
+    Info: Your use of Intel Corporation's design tools, logic functions 
+    Info: and other software and tools, and any partner logic 
+    Info: functions, and any output files from any of the foregoing 
+    Info: (including device programming or simulation files), and any 
+    Info: associated documentation or information are expressly subject 
+    Info: to the terms and conditions of the Intel Program License 
+    Info: Subscription Agreement, the Intel Quartus Prime License Agreement,
+    Info: the Intel FPGA IP License Agreement, or other applicable license
+    Info: agreement, including, without limitation, that your use is for
+    Info: the sole purpose of programming logic devices manufactured by
+    Info: Intel and sold by Intel or its authorized distributors.  Please
+    Info: refer to the applicable agreement for further details, at
+    Info: https://fpgasoftware.intel.com/eula.
+    Info: Processing started: Tue Jan 20 21:01:14 2026
+Info: Command: quartus_map --read_settings_files=on --write_settings_files=off top -c top
+Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
+Info (20030): Parallel compilation is enabled and will use 6 of the 6 processors detected
+Info (12021): Found 1 design units, including 1 entities, in source file top.v
+    Info (12023): Found entity 1: top File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 1
+Info (12127): Elaborating entity "top" for the top level hierarchy
+Warning (10858): Verilog HDL warning at top.v(104): object rd_ used but never assigned File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 104
+Warning (10230): Verilog HDL assignment warning at top.v(115): truncated value with size 64 to match size of target (32) File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 115
+Warning (10030): Net "rd_" at top.v(104) has no driver or initial value, using a default initial value '0' File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 104
+Warning (10034): Output port "prog_counter_addr_test" at top.v(8) has no driver File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 8
+Warning (10034): Output port "alu_sel_test" at top.v(22) has no driver File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 22
+Warning (12125): Using design file rca.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: rca File: /home/taher/verilog_code/projects/risc/pipelined/rca.v Line: 1
+Info (12128): Elaborating entity "rca" for hierarchy "rca:adder1" File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 122
+Warning (12125): Using design file full_adder.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: full_adder File: /home/taher/verilog_code/projects/risc/pipelined/full_adder.v Line: 1
+Info (12128): Elaborating entity "full_adder" for hierarchy "rca:adder1|full_adder:stage[0].FA" File: /home/taher/verilog_code/projects/risc/pipelined/rca.v Line: 29
+Warning (12125): Using design file half_adder.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: half_adder File: /home/taher/verilog_code/projects/risc/pipelined/half_adder.v Line: 1
+Info (12128): Elaborating entity "half_adder" for hierarchy "rca:adder1|full_adder:stage[0].FA|half_adder:HA0" File: /home/taher/verilog_code/projects/risc/pipelined/full_adder.v Line: 14
+Warning (12125): Using design file prog_count.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: prog_count File: /home/taher/verilog_code/projects/risc/pipelined/prog_count.v Line: 6
+Info (12128): Elaborating entity "prog_count" for hierarchy "prog_count:Program_counter" File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 130
+Warning (12125): Using design file instruction_mem.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: instruction_mem File: /home/taher/verilog_code/projects/risc/pipelined/instruction_mem.v Line: 1
+Info (12128): Elaborating entity "instruction_mem" for hierarchy "instruction_mem:Instruction_MEM" File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 136
+Warning (10030): Net "mem.data_a" at instruction_mem.v(16) has no driver or initial value, using a default initial value '0' File: /home/taher/verilog_code/projects/risc/pipelined/instruction_mem.v Line: 16
+Warning (10030): Net "mem.waddr_a" at instruction_mem.v(16) has no driver or initial value, using a default initial value '0' File: /home/taher/verilog_code/projects/risc/pipelined/instruction_mem.v Line: 16
+Warning (10030): Net "mem.we_a" at instruction_mem.v(16) has no driver or initial value, using a default initial value '0' File: /home/taher/verilog_code/projects/risc/pipelined/instruction_mem.v Line: 16
+Warning (12125): Using design file control_unit.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: control_unit File: /home/taher/verilog_code/projects/risc/pipelined/control_unit.v Line: 1
+Info (12128): Elaborating entity "control_unit" for hierarchy "control_unit:Control_Unit" File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 157
+Warning (10270): Verilog HDL Case Statement warning at control_unit.v(13): incomplete case statement has no default case item File: /home/taher/verilog_code/projects/risc/pipelined/control_unit.v Line: 13
+Warning (12125): Using design file reg_file.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: reg_file File: /home/taher/verilog_code/projects/risc/pipelined/reg_file.v Line: 1
+Info (12128): Elaborating entity "reg_file" for hierarchy "reg_file:Reg_file" File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 170
+Warning (12125): Using design file immgen.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: immgen File: /home/taher/verilog_code/projects/risc/pipelined/immgen.v Line: 1
+Info (12128): Elaborating entity "immgen" for hierarchy "immgen:ImmGen" File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 178
+Warning (12125): Using design file alu.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: alu File: /home/taher/verilog_code/projects/risc/pipelined/alu.v Line: 1
+Info (12128): Elaborating entity "alu" for hierarchy "alu:ALU" File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 239
+Warning (12125): Using design file alu_control.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: alu_control File: /home/taher/verilog_code/projects/risc/pipelined/alu_control.v Line: 1
+Info (12128): Elaborating entity "alu_control" for hierarchy "alu_control:ALU_Control" File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 247
+Warning (12125): Using design file data_mem.v, which is not specified as a design file for the current project, but contains definitions for 1 design units and 1 entities in project
+    Info (12023): Found entity 1: data_mem File: /home/taher/verilog_code/projects/risc/pipelined/data_mem.v Line: 1
+Info (12128): Elaborating entity "data_mem" for hierarchy "data_mem:Data_MEM" File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 292
+Warning (12011): Net is missing source, defaulting to GND
+    Warning (12110): Net "prog_counter_addr[31]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[30]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[29]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[28]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[27]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[26]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[25]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[24]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[23]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[22]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[21]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[20]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[19]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[18]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[17]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[16]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[15]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[14]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[13]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[12]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[11]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[10]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+Warning (12011): Net is missing source, defaulting to GND
+    Warning (12110): Net "prog_counter_addr[31]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[30]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[29]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[28]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[27]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[26]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[25]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[24]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[23]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[22]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[21]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[20]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[19]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[18]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[17]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[16]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[15]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[14]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[13]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[12]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[11]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+    Warning (12110): Net "prog_counter_addr[10]" is missing source, defaulting to GND File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 44
+Error (12014): Net "Regwrite_ctrl", which fans out to "Regwrite_ctrl_test", cannot be assigned more than one value File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 55
+    Error (12015): Net is fed by "control_unit:Control_Unit|Regwrite" File: /home/taher/verilog_code/projects/risc/pipelined/control_unit.v Line: 9
+    Error (12015): Net is fed by "MEM_WB_pipeline_register_current_state[35]" File: /home/taher/verilog_code/projects/risc/pipelined/top.v Line: 279
+Warning (12241): 4 hierarchies have connectivity warnings - see the Connectivity Checks report folder
+Error: Quartus Prime Analysis & Synthesis was unsuccessful. 3 errors, 68 warnings
+    Error: Peak virtual memory: 337 megabytes
+    Error: Processing ended: Tue Jan 20 21:01:20 2026
+    Error: Elapsed time: 00:00:06
+    Error: Total CPU time (on all processors): 00:00:14
+
+

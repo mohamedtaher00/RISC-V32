@@ -1,0 +1,9 @@
+# vsim -c -do "run -all; quit" data_mem_tb 
+# Start time: 14:26:43 on Jan 15,2026
+# Loading work.data_mem_tb
+# Loading work.data_mem
+# run -all
+# ** Note: $finish    : data_mem_tb.v(38)
+#    Time: 40 ns  Iteration: 0  Instance: /data_mem_tb
+# End time: 14:26:44 on Jan 15,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
