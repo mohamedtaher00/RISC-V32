@@ -46,7 +46,8 @@ module control_unit (
 			  Memwrite = 1'b0 ;
 			  branch = 1'b1 ;
 			  AluOp = 2'b01 ;
-		  end 
+		  end
+		 default {branch, Memread, Memtoreg, AluOp, Memwrite, Alusrc, Regwrite} ='b 0 ; 
 
 
 	  endcase 

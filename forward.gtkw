@@ -1,0 +1,33 @@
+[*]
+[*] GTKWave Analyzer v3.3.121 (w)1999-2024 BSI
+[*] Sun Jan 25 08:48:36 2026
+[*]
+[dumpfile] "/home/taher/verilog_code/projects/risc/pipelined/dump.vcd"
+[dumpfile_mtime] "Sun Jan 25 08:44:27 2026"
+[dumpfile_size] 2194
+[savefile] "/home/taher/verilog_code/projects/risc/pipelined/forward.gtkw"
+[timestart] 0
+[size] 1908 1003
+[pos] -1 -1
+*-3.022513 9 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] forwarding_unit_tb.
+[sst_width] 276
+[signals_width] 206
+[sst_expanded] 1
+[sst_vpaned_height] 298
+@28
+forwarding_unit_tb.DUT.ForwardA[1:0]
+@22
+#{forwarding_unit_tb.DUT.ID_EX_RegisterRs1[4:0]} forwarding_unit_tb.DUT.ID_EX_RegisterRs1[4] forwarding_unit_tb.DUT.ID_EX_RegisterRs1[3] forwarding_unit_tb.DUT.ID_EX_RegisterRs1[2] forwarding_unit_tb.DUT.ID_EX_RegisterRs1[1] forwarding_unit_tb.DUT.ID_EX_RegisterRs1[0]
+#{forwarding_unit_tb.DUT.ID_EX_RegisterRs2[4:0]} forwarding_unit_tb.DUT.ID_EX_RegisterRs2[4] forwarding_unit_tb.DUT.ID_EX_RegisterRs2[3] forwarding_unit_tb.DUT.ID_EX_RegisterRs2[2] forwarding_unit_tb.DUT.ID_EX_RegisterRs2[1] forwarding_unit_tb.DUT.ID_EX_RegisterRs2[0]
+#{forwarding_unit_tb.DUT.EX_MEM_RegisterRd[4:0]} forwarding_unit_tb.DUT.EX_MEM_RegisterRd[4] forwarding_unit_tb.DUT.EX_MEM_RegisterRd[3] forwarding_unit_tb.DUT.EX_MEM_RegisterRd[2] forwarding_unit_tb.DUT.EX_MEM_RegisterRd[1] forwarding_unit_tb.DUT.EX_MEM_RegisterRd[0]
+#{forwarding_unit_tb.DUT.MEM_WB_RegisterRd[4:0]} forwarding_unit_tb.DUT.MEM_WB_RegisterRd[4] forwarding_unit_tb.DUT.MEM_WB_RegisterRd[3] forwarding_unit_tb.DUT.MEM_WB_RegisterRd[2] forwarding_unit_tb.DUT.MEM_WB_RegisterRd[1] forwarding_unit_tb.DUT.MEM_WB_RegisterRd[0]
+@28
+forwarding_unit_tb.DUT.EX_MEM_RegWrite
+forwarding_unit_tb.DUT.MEM_WB_RegWrite
+forwarding_unit_tb.DUT.flag0
+forwarding_unit_tb.DUT.flag1
+forwarding_unit_tb.DUT.flag2
+forwarding_unit_tb.DUT.flag3
+[pattern_trace] 1
+[pattern_trace] 0

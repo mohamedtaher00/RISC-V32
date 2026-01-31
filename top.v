@@ -129,7 +129,7 @@ module top (
 	reg [4:0] EX_MEM_pipeline_register_previous_prediction_addr ; 	
 
 	// MEM stage intermediate signals 
-	wire [72:0] MEM_WB_pipeline_register ; //32(read data) + 32(alu_result_MEM_stage) + 2(WB control signals) + Rd = 71 
+	wire [77:0] MEM_WB_pipeline_register ; //32(read data) + 32(alu_result_MEM_stage) + 2(WB control signals) + Rd = 71 
 
 	wire [31:0] readed_data 	;
 	wire [1:0]  ctrl_write_back	;
@@ -137,9 +137,9 @@ module top (
 	wire [4:0] rd_			; 
 	wire [31:0] alu_result_MEM_stage; 
 	wire we_were_wrong 	; 
-
+	wire [4:0] previous_prediction_addr_MEM_WB ;  
 	//WB stage intermediate signals 
-	reg [40:0] MEM_WB_pipeline_register_current_state ; 
+	reg [45:0] MEM_WB_pipeline_register_current_state ; 
 	
 	wire we_were_wrong_wb 	; 
 
@@ -207,7 +207,8 @@ module top (
 		.reset_n(reset_n), 
 		.clk(clk), 
 		.addr_needs_predition(prog_counter_addr[4:0]), //low order bits from the pc 
-		.previous_prediction_addr(EX_MEM_pipeline_register[144:140]) ,//from EX/MEM  
+		.previous_prediction_addr_ID_EX(ID_EX_pipeline_register [257:253]) ,//from EX/MEM -> I changed it to ID/EX
+	        .previous_prediction_addr_MEM_WB(MEM_WB_pipeline_register[77:73]), 
 		.branch_EX_MEM(EX_MEM_pipeline_register[4]), 
 		.branch_MEM_WB(MEM_WB_pipeline_register[72]) , 
 		.final_verdict(EX_MEM_pipeline_register[139]) ,// 1 means taken, 0 means not taken -> from MEM/WB 
@@ -274,7 +275,7 @@ module top (
 		ID_EX_pipeline_register_our_prediction <= our_prediction_ID_EX ; 
 		ID_EX_pipeline_register_previous_prediction_addr <= IF_ID_pipeline_register[102:98] ;  	
 	end
-	assign our_prediction_ID_EX = IF_ID_pipeline_register [97] ; 	
+	assign our_prediction_ID_EX = IF_ID_pipeline_register [97:96] ; 	
   // hazard detection unit 
 	hazard_detection_unit lw_use_hazard( 
 		.ID_EX_MemRead(ID_EX_pipeline_register[3]),
@@ -304,14 +305,14 @@ module top (
 
 	// return address mux 
 	always @(*) begin 
-		if(our_prediction) //taken  
+		if(our_prediction[1]) //taken  
 			return_addr = prog_counter_64_bit_addr ; 
 		else // not taken 
 			return_addr = branch_target_addr ; 
 	end 	
 
   // EX stage
-	
+	wire [4:0] previous_prediction_addr_EX_MEM ;  	
 	//next state logic 
 	assign rd = ID_EX_pipeline_register [182:178] ;
 	assign write_data = ID_EX_pipeline_register[135:104] ;
@@ -415,7 +416,8 @@ module top (
   // MEM stage 
 	
 	//output logic 
-	assign MEM_WB_pipeline_register = { 	MEM_WB_pipeline_register_current_state [40], 	
+	assign MEM_WB_pipeline_register = { 	MEM_WB_pipeline_register_current_state [45:41], 
+						MEM_WB_pipeline_register_current_state [40], 	
 						MEM_WB_pipeline_register_current_state [39]  , 	
 						MEM_WB_pipeline_register_current_state [38:34], 
 						MEM_WB_pipeline_register_current_state [33:2], 
@@ -428,7 +430,8 @@ module top (
 	assign alu_result_MEM_stage = EX_MEM_pipeline_register [101:70] ; 
 	assign rd_ = EX_MEM_pipeline_register [138:134] ; 
 	assign we_were_wrong_wb = EX_MEM_pipeline_register [139] ; 
-	assign branch_MEM = EX_MEM_pipeline_register[4] ; 
+	assign branch_MEM = EX_MEM_pipeline_register[4] ;
+	assign previous_prediction_addr_MEM_WB [4:0] = EX_MEM_pipeline_register[144:140]	; 
 	// current sate logic 
 	
 	always @(posedge clk) begin
@@ -437,7 +440,8 @@ module top (
 		MEM_WB_pipeline_register_current_state [33:2] <= alu_result_MEM_stage ; 
 		MEM_WB_pipeline_register_current_state [38:34] <= rd_		;
 		MEM_WB_pipeline_register_current_state [39]    <= we_were_wrong_wb ; 
-		MEM_WB_pipeline_register_current_state [40]    <= branch_MEM 	; 	
+		MEM_WB_pipeline_register_current_state [40]    <= branch_MEM 	; 
+		MEM_WB_pipeline_register_current_state [45:41] <= previous_prediction_addr_MEM_WB[4:0] ; 
 	end 
 
 	data_mem # (.MEMORY_SIZE(2048)) Data_MEM(

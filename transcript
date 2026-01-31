@@ -1,9 +1,29 @@
-# vsim -c -do "run -all; quit" data_mem_tb 
-# Start time: 14:26:43 on Jan 15,2026
-# Loading work.data_mem_tb
+# vsim -c -do "run -all;quit" top_tb 
+# Start time: 21:58:41 on Jan 31,2026
+# Loading work.top_tb
+# Loading work.top
+# Loading work.rca
+# Loading work.prog_count
+# Loading work.instruction_mem
+# Loading work.bht
+# Loading work.control_unit
+# Loading work.reg_file
+# Loading work.immgen
+# Loading work.hazard_detection_unit
+# Loading work.alu
+# Loading work.alu_control
+# Loading work.forwarding_unit
 # Loading work.data_mem
+# Loading work.full_adder
+# Loading work.half_adder
+# ** Warning: (vsim-3015) [PCDPC] - Port size (64) does not match connection size (32) for port 'addr_in'. The port definition is at: prog_count.v(15).
+#    Time: 0 ps  Iteration: 0  Instance: /top_tb/DUT/Program_counter File: top.v Line: 172
+# ** Warning: (vsim-3015) [PCDPC] - Port size (10) does not match connection size (32) for port 'addr_2_INST_MEM'. The port definition is at: prog_count.v(16).
+#    Time: 0 ps  Iteration: 0  Instance: /top_tb/DUT/Program_counter File: top.v Line: 172
+# ** Warning: (vsim-3015) [PCDPC] - Port size (10) does not match connection size (32) for port 'addr'. The port definition is at: instruction_mem.v(6).
+#    Time: 0 ps  Iteration: 0  Instance: /top_tb/DUT/Instruction_MEM File: top.v Line: 181
 # run -all
-# ** Note: $finish    : data_mem_tb.v(38)
-#    Time: 40 ns  Iteration: 0  Instance: /data_mem_tb
-# End time: 14:26:44 on Jan 15,2026, Elapsed time: 0:00:01
-# Errors: 0, Warnings: 0
+# ** Note: $finish    : top_tb.v(61)
+#    Time: 230 ns  Iteration: 0  Instance: /top_tb
+# End time: 21:58:42 on Jan 31,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 3

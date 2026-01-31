@@ -9,7 +9,9 @@ module prog_count #(parameter INST_MEMORY_SIZE = 1024,
 )
 	(
     	input clk,
-    	input  reset_n, 
+    	input  reset_n,
+	input stall, 
+
   	input [63:0] addr_in, 
     	output  reg [ADDR_WIDTH-1:0] addr_2_INST_MEM,
 	output [63:0] addr_2_IF_ID_pipeline_reg	
@@ -18,12 +20,22 @@ module prog_count #(parameter INST_MEMORY_SIZE = 1024,
 	reg [ADDR_WIDTH-1:0] addr_reg ;
 	reg [ADDR_WIDTH-1:0] addr_next ;
 
+
+
+
+	wire [31:0] prog_counter_addr_tb ;
+        wire [31:0] prog_counter_next_addr_tb ;
+        wire [63:0] prog_counter_64_bit_addr_tb ; 
+
 	assign addr_2_IF_ID_pipeline_reg = {{54{1'b0}}, {addr_2_INST_MEM}} ; 
 	// current state logic
 	always @(posedge clk) begin 
 		if (~reset_n) begin 
 			addr_reg <= {ADDR_WIDTH{1'b0}};
-		end 
+		end
+	        else if (stall) begin 
+			addr_reg <= addr_reg ; 
+		end 	
 		else begin 
 			addr_reg <= addr_next;
 		end 
