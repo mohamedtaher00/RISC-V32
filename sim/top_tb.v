@@ -57,7 +57,7 @@ module top_tb ;
     clk_tb = 0 ;
     reset_n_tb = 0 ;
     #10 reset_n_tb = 1 ;
-    #220 
+    #250 
     $finish ; 
   end 
 
