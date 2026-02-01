@@ -119,11 +119,11 @@ module top (
 
 	wire [1:0] our_prediction_ID_EX ; 
 	// EX stage intermediate signals 
-	wire [144:0] EX_MEM_pipeline_register ; //64(calculated address) + 32(alu_o/p) + 1(zero_flag) + 5(destination_reg) + 32(store data if sw) + 5 (rest of ctrl_unit) 
+	wire [145:0] EX_MEM_pipeline_register ; //64(calculated address) + 32(alu_o/p) + 1(zero_flag) + 5(destination_reg) + 32(store data if sw) + 5 (rest of ctrl_unit) 
 	wire [4:0] ctrl_rest ;
 	wire [31:0] write_data ; 
 	wire [4:0] rd ; 	
-	reg [144:0] EX_MEM_pipeline_register_current_state ; // we modify it to include we_were_wong it was [138:0]  the same w/ EX_MEM_pipeline_register 
+	reg [145:0] EX_MEM_pipeline_register_current_state ; // we modify it to include we_were_wong it was [138:0]  the same w/ EX_MEM_pipeline_register 
 	wire [63:0] return_addr_EX ;
 	 
 	reg [4:0] EX_MEM_pipeline_register_previous_prediction_addr ; 	
@@ -137,7 +137,8 @@ module top (
 	wire [4:0] rd_			; 
 	wire [31:0] alu_result_MEM_stage; 
 	wire we_were_wrong 	; 
-	wire [4:0] previous_prediction_addr_MEM_WB ;  
+	wire [4:0] previous_prediction_addr_MEM_WB ; 
+        wire final_verdict ; 	
 	//WB stage intermediate signals 
 	reg [45:0] MEM_WB_pipeline_register_current_state ; 
 	
@@ -211,7 +212,7 @@ module top (
 	        .previous_prediction_addr_MEM_WB(MEM_WB_pipeline_register[77:73]), 
 		.branch_EX_MEM(EX_MEM_pipeline_register[4]), 
 		.branch_MEM_WB(MEM_WB_pipeline_register[72]) , 
-		.final_verdict(EX_MEM_pipeline_register[139]) ,// 1 means taken, 0 means not taken -> from MEM/WB 
+		.final_verdict(EX_MEM_pipeline_register[145]) ,// 1 means taken, 0 means not taken -> from MEM/WB 
 		.our_prediction(our_prediction)
 	); 	
                     
@@ -335,10 +336,12 @@ module top (
 		EX_MEM_pipeline_register_current_state [133:102]   <= write_data     ;
 		EX_MEM_pipeline_register_current_state [138:134]   <= rd 	     ;
 		EX_MEM_pipeline_register_current_state [139]	   <= we_were_wrong  ;
-		EX_MEM_pipeline_register_current_state [144:140]   <= previous_prediction_addr_EX_MEM ; 
+		EX_MEM_pipeline_register_current_state [144:140]   <= previous_prediction_addr_EX_MEM ;
+		EX_MEM_pipeline_register_current_state [145]	   <= final_verdict ;  
 	end
        // output logic 
 	assign EX_MEM_pipeline_register = {
+		EX_MEM_pipeline_register_current_state [145] , 
 		EX_MEM_pipeline_register_current_state [144:140] , 
 		EX_MEM_pipeline_register_current_state  [139],  
 		EX_MEM_pipeline_register_current_state  [138:134]    , 
@@ -372,6 +375,7 @@ module top (
 	
 	and (branch_condition, zero_flag , ID_EX_pipeline_register[4]); 
 	assign we_were_wrong =  ID_EX_pipeline_register[4] & (branch_condition ^ ID_EX_pipeline_register[252] ) ;
+	assign final_verdict = branch_condition ; 
   // forwarding unit
 	wire [1:0] forwardA, forwardB ; 
 	forwarding_unit Forwarding_Unit(
