@@ -1,5 +1,5 @@
 # vsim -c -do "run -all;quit" top_tb 
-# Start time: 09:02:43 on Feb 01,2026
+# Start time: 11:18:24 on Feb 01,2026
 # Loading work.top_tb
 # Loading work.top
 # Loading work.rca
@@ -24,6 +24,6 @@
 #    Time: 0 ps  Iteration: 0  Instance: /top_tb/DUT/Instruction_MEM File: top.v Line: 182
 # run -all
 # ** Note: $finish    : top_tb.v(61)
-#    Time: 230 ns  Iteration: 0  Instance: /top_tb
-# End time: 09:02:43 on Feb 01,2026, Elapsed time: 0:00:00
+#    Time: 260 ns  Iteration: 0  Instance: /top_tb
+# End time: 11:18:24 on Feb 01,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 3
