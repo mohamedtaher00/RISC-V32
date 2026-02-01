@@ -1,3 +1,8 @@
 db/
 work/
 incremental_db/
+*.log
+*.swp
+*.qpf
+*.qsf
+*.qws
