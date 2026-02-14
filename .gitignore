@@ -1,0 +1,16 @@
+db/
+work/
+incremental_db/
+*.log
+*.swp
+*.qpf
+*.qsf
+*.qws
+*.pdf
+*.vcd
+*.gtkw
+*.rpt
+*.summary
+transcript
+src/transcript
+sim/transcript
