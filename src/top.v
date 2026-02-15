@@ -61,9 +61,9 @@ module top (
         output [3:0] alu_ctrl_lines_test	,
 
 
-	output [31:0] prog_counter_addr ,
-        output reg [31:0] prog_counter_next_addr ,
-        output [63:0] prog_counter_64_bit_addr  ,
+	output [31:0] pc_addr_if ,
+        output reg [63:0] pc_nxt_addr_if ,
+        output [63:0] pc_64_addr_if  ,
 
 
 	output [1:0] alu_op_test 		, 
@@ -96,8 +96,10 @@ module top (
 	wire [63:0] inst_addr_plus4_if ;//branch mux
 	
 	wire [31:0] instruction ; //instruction_mem/data path interface
-
-
+	
+	wire [63:0] pc_64_addr_if ; 
+	wire [63:0] pc_nxt_addr_if ; 
+	wire [9:0]  pc_addr_if ; // it should be [ADDR_WIDTH-1:0] 
 	reg [4:0] pc_addr_low_bits ; 
 	wire [1:0] our_prediction ; 
 
@@ -209,20 +211,20 @@ module top (
 	// next_addr_mux ; we may have stall, not valid pipeline, a branch, a correction of a branch 	
 	always @(*) begin 
 		if (!pipeline_valid) 
-			prog_counter_next_addr = inst_addr_plus4_if ;
+			pc_nxt_addr_if = inst_addr_plus4_if ;
 	        else if (ex_mem [139] & ex_mem[4]) // ex_mem [139]: branch_mispredicted_mem, ex_mem[4]: branch
-			prog_counter_next_addr = ex_mem[68:5]  ; //  ex_mem[68:5]: return addr 
+			pc_nxt_addr_if = ex_mem[68:5]  ; //  ex_mem[68:5]: return addr 
 		else if (our_prediction[1] & branch_ctrl_id) 
-			prog_counter_next_addr = branch_target_addr_id ; 
+			pc_nxt_addr_if = branch_target_addr_id ; 
 		else 
-			prog_counter_next_addr = inst_addr_plus4_if ; 	
+			pc_nxt_addr_if = inst_addr_plus4_if ; 	
 	end 	
 	
 	
 	
 	rca # (.n(64)) adder1(
 		.x(64'h0000_0000_0000_0004),
-		.y(prog_counter_64_bit_addr),
+		.y(pc_64_addr_if),
 		.c_in(1'b0),
 		.s(inst_addr_plus4_if),
 		.c_out()//we'll ignore the overflow for now 
@@ -232,15 +234,15 @@ module top (
 		.clk(clk),
 		.reset_n(reset_n),
 		.stall(stall_cnt), 
-		.addr_in(prog_counter_next_addr),
-		.addr_2_INST_MEM(prog_counter_addr),
-		.addr_2_IF_ID_pipeline_reg(prog_counter_64_bit_addr)
+		.addr_in(pc_nxt_addr_if),
+		.addr_2_INST_MEM(pc_addr_if),
+		.addr_2_IF_ID_pipeline_reg(pc_64_addr_if)
 	);
 	// instruction memory 	
 	instruction_mem #(.INST_MEMORY_SIZE(1024)) Instruction_MEM(
 		.clk(clk),
 		.stall(stall_cnt), 
-		.addr(prog_counter_addr), 
+		.addr(pc_addr_if), 
 		.data(instruction) 
 	);  
 	    	  
@@ -254,8 +256,8 @@ module top (
 
 	always @(posedge clk) begin 
 		if(!stall_cnt) begin 	
-	         inst_addr_if <= prog_counter_64_bit_addr;// this part is needed to be clocked, the reg_file o/p is already clocked
-		 pc_addr_low_bits <= prog_counter_addr[4:0] ;
+	         inst_addr_if <= pc_64_addr_if;// this part is needed to be clocked, the reg_file o/p is already clocked
+		 pc_addr_low_bits <= pc_addr_if[4:0] ;
 		end 
 		else begin  
 	         inst_addr_if <= inst_addr_if ;
@@ -265,7 +267,7 @@ module top (
 	bht predictor(
 		.reset_n(reset_n), 
 		.clk(clk), 
-		.addr_needs_predition(prog_counter_addr[4:0]), //low order bits from the pc 
+		.addr_needs_predition(pc_addr_if[4:0]), //low order bits from the pc 
 		.previous_prediction_addr_ID_EX(id_ex [257:253]) ,//from ID/EX
 	        .previous_prediction_addr_MEM_WB(mem_wb[77:73]), 
 		.branch_EX_MEM(ex_mem[4]), 
@@ -384,7 +386,7 @@ module top (
 	// return address mux 
 	always @(*) begin 
 		if(our_prediction[1]) //taken  
-			return_addr_id = prog_counter_64_bit_addr ; 
+			return_addr_id = pc_64_addr_if ; 
 		else // not taken 
 			return_addr_id = branch_target_addr_id ; 
 	end 	
@@ -553,7 +555,7 @@ module top (
 
 
 	assign alu_ctrl_lines_test = alu_sel ; 	
-	assign pc_addr_test = prog_counter_addr [9:0] ;	
+	assign pc_addr_test = pc_addr_if [9:0] ;	
 	assign instruction_test = instruction ;
 	assign write_back_data_test = write_back_data ; 
 endmodule 
