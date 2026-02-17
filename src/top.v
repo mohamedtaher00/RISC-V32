@@ -61,17 +61,25 @@ module top (
         output [3:0] alu_ctrl_lines_test	,
 
 
-	output [31:0] pc_addr_if ,
-        output reg [63:0] pc_nxt_addr_if ,
-        output [63:0] pc_64_addr_if  ,
+
+//	output [31:0] pc_addr_if ,
+//        output reg [63:0] pc_nxt_addr_if ,
+//        output [63:0] pc_64_addr_if  ,
 
 
 	output [1:0] alu_op_test 		, 
         output alu_src_test     		, 
         output branch_test      		, 
         output mem_write_ctrl_test  		,
-        output reg_write_ctrl_test		, 
-        output mem2reg_ctrl_test 				
+        output reg_write_ctrl_test		,	
+        output mem2reg_ctrl_test
+	
+	// memory interface 
+	output [:] addr, // calculated at ex stage, then available at ex_mem  
+	output [31:0] write_data, // sw -> register file provides the data at id stage, then available at id_ex  
+	input [31:0] read_data, // lw -> data mem provides the data at mem stage, then available at mem_wb  
+	output write_enable, // in case of sw, when do we need this to be on? simply when we write a periphral (mem stage) 
+	output read_enable // in case of lw, when do we need this to be on? simply when we read a periphral (wb stage)	
 
 );
 
@@ -97,12 +105,13 @@ module top (
 	
 	wire [31:0] instruction ; //instruction_mem/data path interface
 	
-	wire [63:0] pc_64_addr_if ; 
-	wire [63:0] pc_nxt_addr_if ; 
-	wire [9:0]  pc_addr_if ; // it should be [ADDR_WIDTH-1:0] 
+	wire [63:0] pc_64_addr_if ; 	
+	reg [63:0] pc_nxt_addr_if ; 
+	wire [9:0]  pc_addr_if ; // it should be [ADDR_WIDRH-1:0]  
 	reg [4:0] pc_addr_low_bits ; 
-	wire [1:0] our_prediction ; 
-
+	wire [1:0] our_prediction ; 	
+	
+	
 	// ID stage intermediate signals 
 	wire [257:0] id_ex ; // 32(register1)+ 32(register2)+ 32(imm) +64(PC) +15(addresses of two sources and dest)+ 4(alu_ctrl)+ 8(ctrl lines)
 	
@@ -135,16 +144,16 @@ module top (
         reg [1:0] id_ex_our_prediction_current ; 	
 	reg [4:0] id_ex_previous_prediction_addr_current ; 	
 	
-	reg [7:0]  id_ex_ctrl_unit_nxt ;   
-        reg [63:0] id_ex_pc_nxt; 
-        reg [31:0] id_ex_immgen_nxt ;  
-        reg [4:0]  id_ex_rs1_nxt   ;      
-        reg [4:0]  id_ex_rs2_nxt   ;         
-        reg [4:0]  id_ex_rd_nxt      ;
-	reg [3:0]  id_ex_alu_ctrl_nxt ;
-	reg [63:0] id_ex_return_addr_nxt	;
-        reg [1:0]  id_ex_our_prediction_nxt ; 	
-	reg [4:0]  id_ex_previous_prediction_addr_nxt ; 
+	wire [7:0]  id_ex_ctrl_unit_nxt ;   
+        wire [63:0] id_ex_pc_nxt; 
+        wire [31:0] id_ex_immgen_nxt ;  
+        wire [4:0]  id_ex_rs1_nxt   ;      
+        wire [4:0]  id_ex_rs2_nxt   ;         
+        wire [4:0]  id_ex_rd_nxt      ;
+	wire [3:0]  id_ex_alu_ctrl_nxt ;
+	wire [63:0] id_ex_return_addr_nxt	;
+        wire [1:0]  id_ex_our_prediction_nxt ; 	
+	wire [4:0]  id_ex_previous_prediction_addr_nxt ; 
 	
 	
 	
