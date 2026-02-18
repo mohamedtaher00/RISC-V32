@@ -38,7 +38,7 @@
 // mem_wb [77:0] :
 //   [1:0]   = ctrl_signals_mem ;	
 //   [33:2] = readed_data_mem 		 
-//   [65:34] = alu_result_mem_stage ; 
+//   [65:34] = alu_result_mem ; 
 //   [70:66] = rd_mem		;
 //   [71]    = we_were_wrong_wb ; 
 //   [72]    = branch_mem 	; 
@@ -196,13 +196,13 @@ module top (
 	
 	
 	// MEM stage intermediate signals 
-	wire [77:0] mem_wb ; //32(read data) + 32(alu_result_mem_stage) + 2(WB control signals) + Rd = 71 
+	wire [77:0] mem_wb ; //32(read data) + 32(alu_result_mem) + 2(WB control signals) + Rd = 71 
 
 	wire [31:0] readed_data_mem 	;
 	wire [1:0]  ctrl_signals_mem	;
 	wire branch_mem ; 
 	wire [4:0] rd_mem			; 
-	wire [31:0] alu_result_mem_stage; 
+	wire [31:0] alu_result_mem; 
 	wire branch_mispredicted_mem 	; 
 	wire [4:0] previous_prediction_addr_mem ; 
 	
@@ -526,7 +526,7 @@ module top (
 
 	//next state logic 
 	assign ctrl_signals_mem = ex_mem [1:0]; 
-	assign alu_result_mem_stage = ex_mem [101:70] ; 
+	assign alu_result_mem = ex_mem [101:70] ; 
 	assign rd_mem = ex_mem [138:134] ; 
 	assign we_were_wrong_wb = ex_mem [139] ; 
 	assign branch_mem = ex_mem[4] ;
@@ -536,7 +536,7 @@ module top (
 	always @(posedge clk) begin
 	       // current_state_logic	
 		mem_wb_current_state [1:0]   <= ctrl_signals_mem ;	
-		mem_wb_current_state [33:2] <= alu_result_mem_stage ; 
+		mem_wb_current_state [33:2] <= alu_result_mem ; 
 		mem_wb_current_state [38:34] <= rd_mem		;
 		mem_wb_current_state [39]    <= we_were_wrong_wb ; 
 		mem_wb_current_state [40]    <= branch_mem 	; 
@@ -545,7 +545,7 @@ module top (
 
 	data_mem # (.MEMORY_SIZE(2048)) Data_MEM(
 	.clk(clk),
-	.addr(alu_result_mem_stage[$clog2(2048)-1:0]),
+	.addr(alu_result_mem[$clog2(2048)-1:0]),
 	.we(ex_mem[2]),
 	.re(ex_mem[3]), // it's no effect on the data_mem really, but maybe the logic appeaers in the future and we add it (i predict the nop)	
 	.w_data_data_MEM(ex_mem_current_state [133:102]),
