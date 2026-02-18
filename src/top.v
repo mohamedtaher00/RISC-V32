@@ -206,6 +206,13 @@ module top (
 	wire branch_mispredicted_mem 	; 
 	wire [4:0] previous_prediction_addr_mem ; 
 	
+	wire sel_imem_mem ;	 
+        wire sel_dmem_mem ;      
+        wire sel_uart_mem ;       
+        wire sel_gpio_mem ;	
+        wire sel_timer_mem; 	
+
+
 	
 	//WB stage intermediate signals 
 	reg [45:0] mem_wb_current_state ; 
@@ -547,6 +554,25 @@ module top (
 
 
 
+
+	// Address decoder 
+	//===========================================================================
+	// Address Map
+	//===========================================================================
+	// 0x00000000 - 0x00003FFF  : Instruction Memory (16KB)
+	// 0x00004000 - 0x00006FFF  : Data Memory        (12KB)
+	// 0x00008000 - 0x0000800F  : UART registers
+	// 0x00008010 - 0x0000801F  : GPIO registers
+	// 0x00008020 - 0x0000802F  : Timer registers
+
+	address_decoder addr_decoder( 
+		.addr(ex_mem[101:70]), 		//   [101:70]    = alu_result_ex 
+                .sel_imem(sel_imem_mem), 
+                .sel_dmem(sel_dmem_mem), 
+                .sel_uart(sel_uart_mem), 
+                .sel_gpio(sel_gpio_mem),
+                .sel_timer(sel_timer_mem)
+	); 
   //WB stage 
 
 	// third mux (write back mux)

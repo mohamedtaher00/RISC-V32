@@ -1,10 +1,10 @@
 module address_decoder (
-    input  wire [31:0] addr,
-    output wire        sel_imem,    // Instruction memory
-    output wire        sel_dmem,    // Data memory
-    output wire        sel_uart,    // UART peripheral
-    output wire        sel_gpio,    // GPIO peripheral
-    output wire        sel_timer    // Timer peripheral
+    input   [31:0] addr,
+    output         sel_imem,    // Instruction memory
+    output         sel_dmem,    // Data memory
+    output         sel_uart,    // UART peripheral
+    output         sel_gpio,    // GPIO peripheral
+    output         sel_timer    // Timer peripheral
 );
 //===========================================================================
 // Address Map
@@ -16,6 +16,8 @@ module address_decoder (
 // 0x00008020 - 0x0000802F  : Timer registers
 //
 
+
+// the address decoder purpose is to manage the memory 
 assign sel_imem  = (addr >= 32'h0000_0000 && addr <= 32'h0000_3FFF);
 assign sel_dmem  = (addr >= 32'h0000_4000 && addr <= 32'h0000_6FFF);
 assign sel_uart  = (addr >= 32'h0000_8000 && addr <= 32'h0000_800F);
