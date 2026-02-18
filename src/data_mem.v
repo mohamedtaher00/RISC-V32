@@ -5,7 +5,7 @@ module data_mem
 		input [ADDR_WIDTH-1:0] addr,
 	        input we,
 		input re,
-		input [31:0] w_data_data_MEM, 	
+		input [31:0] w_data_MEM, 	
 		input clk,
 
 		output reg [31:0] data 
@@ -19,7 +19,7 @@ module data_mem
 	//write logic - sync write 
 	always @(posedge clk) begin 
 		if (we) 
-			mem[addr] <= w_data_data_MEM;
+			mem[addr] <= w_data_MEM;
 		else // either memory read or will'not deal with memory (write back to the reg file), read enable is insignificant here 
 			data <= mem[addr] ;	
 	end 

@@ -551,7 +551,7 @@ module top (
 	.addr(alu_result_mem[$clog2(2048)-1:0]),
 	.we(ex_mem[2]),
 	.re(ex_mem[3]), // it's no effect on the data_mem really, but maybe the logic appeaers in the future and we add it (i predict the nop)	
-	.w_data_data_MEM(ex_mem [133:102]),
+	.w_data_MEM(ex_mem [133:102]),
 	.data(readed_data_mem) 
 	); 	
 
