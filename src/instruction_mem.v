@@ -5,8 +5,8 @@ module instruction_mem
 		input clk, 
 		input [ADDR_WIDTH-1:0] read_addr,
 	        input stall,	
-		input write_addr, 
-		input write_data,
+		input [ADDR_WIDTH-1:0] write_addr, 
+		input [31:0] write_data,
 	        input w_en, 
 		output reg [31:0] readed_data 
 	); 
@@ -41,6 +41,7 @@ module instruction_mem
 			mem[write_addr+2] <= write_data[23:16] ; 
 			mem[write_addr+1] <= write_data[15:8] ; 
 			mem[write_addr]   <= write_data[7:0] ;
-		end 	
+		end 
+	end 	
 
 endmodule 	

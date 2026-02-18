@@ -75,11 +75,15 @@ module top (
         output mem2reg_ctrl_test
 	
 	// memory interface 
-	output [:] addr, // calculated at ex stage, then available at ex_mem  
-	output [31:0] write_data, // sw -> register file provides the data at id stage, then available at id_ex  
-	input [31:0] read_data, // lw -> data mem provides the data at mem stage, then available at mem_wb  
-	output write_enable, // in case of sw, when do we need this to be on? simply when we write a periphral (mem stage) 
-	output read_enable // in case of lw, when do we need this to be on? simply when we read a periphral (wb stage)	
+//	output [:] addr, // calculated at ex stage, then available at ex_mem  
+//	output [31:0] write_data, // sw -> register file provides the data at id stage, then available at id_ex  
+//	input [31:0] read_data, // lw -> data mem provides the data at mem stage, then available at mem_wb  
+//	output write_enable, // in case of sw, when do we need this to be on? simply when we write a periphral (mem stage) 
+//	output read_enable // in case of lw, when do we need this to be on? simply when we read a periphral (wb stage)
+	
+	// UART interface
+	output sel_uart_mem	; 
+	output // add the write data to the whole address space here  
 
 );
 
@@ -261,7 +265,7 @@ module top (
 		.read_addr(pc_addr_if), 
 		.write_addr(ex_mem[101:70] ),// [101:70] alu_result 
 		.write_data(ex_mem[133:102]), // write data
-		.w_en(sel_imem_mem),
+		.w_en(sel_imem_mem & ex_mem[2] ),
 		.readed_data(instruction) 
 	);  
 	    	  
@@ -549,8 +553,8 @@ module top (
 	data_mem # (.MEMORY_SIZE(2048)) Data_MEM(
 	.clk(clk),
 	.addr(alu_result_mem[$clog2(2048)-1:0]),
-	.we(ex_mem[2]),
-	.re(ex_mem[3]), // it's no effect on the data_mem really, but maybe the logic appeaers in the future and we add it (i predict the nop)	
+	.we(ex_mem[2] & sel_dmem_mem), //memory write ctrl signal 
+	.re(ex_mem[3]), //memory read ctrl signal  it's no effect on the data_mem really, but maybe the logic appeaers in the future and we add it (i predict the nop)	
 	.w_data_MEM(ex_mem [133:102]),
 	.data(readed_data_mem) 
 	); 	
