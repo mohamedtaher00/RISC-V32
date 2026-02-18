@@ -258,8 +258,11 @@ module top (
 	instruction_mem #(.INST_MEMORY_SIZE(1024)) Instruction_MEM(
 		.clk(clk),
 		.stall(stall_cnt), 
-		.addr(pc_addr_if), 
-		.data(instruction) 
+		.read_addr(pc_addr_if), 
+		.write_addr(ex_mem[101:70] ),// [101:70] alu_result 
+		.write_data(ex_mem[133:102]), // write data
+		.w_en(sel_imem_mem),
+		.readed_data(instruction) 
 	);  
 	    	  
        // o/p logic for IF/ID pipeline register 	
@@ -548,7 +551,7 @@ module top (
 	.addr(alu_result_mem[$clog2(2048)-1:0]),
 	.we(ex_mem[2]),
 	.re(ex_mem[3]), // it's no effect on the data_mem really, but maybe the logic appeaers in the future and we add it (i predict the nop)	
-	.w_data_data_MEM(ex_mem_current_state [133:102]),
+	.w_data_data_MEM(ex_mem [133:102]),
 	.data(readed_data_mem) 
 	); 	
 
