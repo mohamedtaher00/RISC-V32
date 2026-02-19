@@ -8,7 +8,7 @@
 # | MAGIC | SIZE | 		  PROGRAM          |
 # ------------------------------------------
 
-# Supported instructions: lw, sw, beq, add, sub, and, or, addi, lui, jal, jr
+# Supported instructions: lw, sw, beq, add, sub, and, or, addi, lui, jal
 
 # Memory map
 ##
@@ -50,7 +50,7 @@ receive_loop:
 
 # Jump to the start of the program
 done_loading:
-    jr s0
+    j program_start
 
 ## Helpers
 
