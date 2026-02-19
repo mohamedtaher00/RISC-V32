@@ -57,13 +57,15 @@ done_loading:
 
 # Read a word from the UART
 read_word:
-    li t1, UART_BASE
+    li t0, UART_BASE
+    li t1, UART_RX
 wait_rx:
-    lw t2, 0(UART_STATUS)
-    andi t2, t2, UART_RX_DONE
-    beqz t2, wait_rx
-    lw a0, UART_RX(t1)
-	ret
+    li t2, UART_STATUS
+    lw t3, 0(t2)
+    andi t3, t3, UART_RX_DONE
+    beqz t3, wait_rx
+    lw a0, 0(t1)
+    ret
 
 
 # Wait for magic word from the UART
