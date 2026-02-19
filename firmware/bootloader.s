@@ -87,3 +87,6 @@ sync_found:
 err:
 loop:
 	jal x0, loop
+
+.org 0x00000800
+program_start:
