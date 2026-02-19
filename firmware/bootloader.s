@@ -70,12 +70,16 @@ wait_rx:
 
 # Wait for magic word from the UART
 wait_sync:
+	addi sp, sp, -4
+	sw ra, 0(sp)
     li t2, SYNC_WORD
 wait_loop:
     call read_word
     beq a0, t2, sync_found
     j wait_loop
 sync_found:
+	lw ra, 0(sp)
+	addi sp, sp, 4
     ret
 
 
