@@ -578,7 +578,6 @@ module top (
                 .sel_dmem(sel_dmem_mem), 
                 .sel_uart(sel_uart_mem), 
                 .sel_gpio(sel_gpio_mem),
-                .sel_timer(sel_timer_mem)
 	); 
   //WB stage 
 
