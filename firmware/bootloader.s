@@ -37,6 +37,7 @@ entry:
 	jal wait_sync
 	jal read_word # Read size
 	mv s0, a0
+	beqz s0, err
 	li s1, PROG_START
 
 # Store the program from UART to the text section of the memory
