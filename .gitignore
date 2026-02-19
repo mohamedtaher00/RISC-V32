@@ -15,4 +15,4 @@ transcript
 src/transcript
 sim/transcript
 src/output_files
-bootloader/test
+firmware/test
