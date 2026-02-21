@@ -94,7 +94,7 @@ module top (
       if (!reset_n)
           boot_cnt <= 2'd0;
       else if (boot_cnt < 2'd3)
-          boot_cnt <= boot_cnt + 1;
+          boot_cnt <= boot_cnt + 2'd1;
   end
 
   wire pipeline_valid ;
