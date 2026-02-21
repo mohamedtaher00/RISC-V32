@@ -1,5 +1,5 @@
 module instruction_mem 
-	#(parameter INST_MEMORY_SIZE = 1024, parameter ADDR_WIDTH = $clog2(INST_MEMORY_SIZE)
+	#(parameter INST_MEMORY_SIZE = 16384, parameter ADDR_WIDTH = $clog2(INST_MEMORY_SIZE)
 	)
 	(
 		input clk, 
