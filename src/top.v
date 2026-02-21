@@ -37,7 +37,7 @@
 //
 // mem_wb [77:0] :
 //   [1:0]   = ctrl_signals_mem ;	
-//   [33:2] = readed_data_mem 		 
+//   [33:2] = readed_data_mem ; 
 //   [65:34] = alu_result_mem ; 
 //   [70:66] = rd_mem		;
 //   [71]    = we_were_wrong_wb ; 
@@ -72,7 +72,7 @@ module top (
         output branch_test      		, 
         output mem_write_ctrl_test  		,
         output reg_write_ctrl_test		,	
-        output mem2reg_ctrl_test
+        output mem2reg_ctrl_test, 
 	
 	// memory interface 
 //	output [:] addr, // calculated at ex stage, then available at ex_mem  
@@ -81,9 +81,9 @@ module top (
 //	output write_enable, // in case of sw, when do we need this to be on? simply when we write a periphral (mem stage) 
 //	output read_enable // in case of lw, when do we need this to be on? simply when we read a periphral (wb stage)
 	
-	// UART interface
-	output sel_uart_mem	; 
-	output // add the write data to the whole address space here  
+	// UART(tty) interface
+	input rx, 	
+	output tx
 
 );
 
@@ -201,8 +201,9 @@ module top (
 	
 	// MEM stage intermediate signals 
 	wire [77:0] mem_wb ; //32(read data) + 32(alu_result_mem) + 2(WB control signals) + Rd = 71 
-
-	wire [31:0] readed_data_mem 	;
+	
+	wire [31:0] readed_data_mem ; 
+	wire [31:0] readed_data_mem_mem 	;
 	wire [1:0]  ctrl_signals_mem	;
 	wire branch_mem ; 
 	wire [4:0] rd_mem			; 
@@ -216,7 +217,7 @@ module top (
         wire sel_gpio_mem ;	
         wire sel_timer_mem; 	
 
-
+	wire [31:0] readed_data_uart ; 
 	
 	//WB stage intermediate signals 
 	reg [45:0] mem_wb_current_state ; 
@@ -265,7 +266,7 @@ module top (
 		.read_addr(pc_addr_if), 
 		.write_addr(ex_mem[101:70] ),// [101:70] alu_result 
 		.write_data(ex_mem[133:102]), // write data
-		.w_en(sel_imem_mem & ex_mem[2] ),
+		.w_en(sel_imem_mem & ex_mem[2] ), // ex_mem[2] mem_write ctrl signal 
 		.readed_data(instruction) 
 	);  
 	    	  
@@ -520,7 +521,9 @@ module top (
 
 
   // MEM stage 
-	
+
+
+	assign readed_data_mem = (sel_uart_mem) ? readed_data_uart : readed_data_mem_mem ; 	
 	//output logic 
 	assign mem_wb = { 	mem_wb_current_state [45:41], 
 						mem_wb_current_state [40], 	
@@ -556,8 +559,9 @@ module top (
 	.we(ex_mem[2] & sel_dmem_mem), //memory write ctrl signal 
 	.re(ex_mem[3]), //memory read ctrl signal  it's no effect on the data_mem really, but maybe the logic appeaers in the future and we add it (i predict the nop)	
 	.w_data_MEM(ex_mem [133:102]),
-	.data(readed_data_mem) 
+	.data(readed_data_mem_mem) 
 	); 	
+
 
 
 
@@ -568,17 +572,30 @@ module top (
 	//===========================================================================
 	// 0x00000000 - 0x00003FFF  : Instruction Memory (16KB)
 	// 0x00004000 - 0x00006FFF  : Data Memory        (12KB)
-	// 0x00008000 - 0x0000800F  : UART registers
-	// 0x00008010 - 0x0000801F  : GPIO registers
-	// 0x00008020 - 0x0000802F  : Timer registers
-
+	// 0x80000000 - 0x8000000F  : UART registers
+	// 0x80000010 - 0x8000001F  : GPIO registers
+	
 	address_decoder addr_decoder( 
 		.addr(ex_mem[101:70]), 		//   [101:70]    = alu_result_ex 
                 .sel_imem(sel_imem_mem), 
                 .sel_dmem(sel_dmem_mem), 
                 .sel_uart(sel_uart_mem), 
                 .sel_gpio(sel_gpio_mem),
-	); 
+	);
+
+
+	// UART
+	uart uart_wrapper(
+		.clk(clk) ,             	
+                .write_data(ex_mem [133:102]), 
+                .data_in_rx(rx), 
+		.data_out_tx(tx) , 
+                .mem_write(ex_mem[2]) , 
+                .sel_uart(sel_uart_mem) , 
+                .addr(alu_result_mem[3:0]), 
+		.readed_data(readed_data_uart) 
+	); 	
+
   //WB stage 
 
 	// third mux (write back mux)
