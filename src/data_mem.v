@@ -1,5 +1,5 @@
 module data_mem 
-	#(parameter MEMORY_SIZE = 2048, parameter ADDR_WIDTH = $clog2(MEMORY_SIZE)
+	#(parameter MEMORY_SIZE = 12288, parameter ADDR_WIDTH = $clog2(MEMORY_SIZE)
 	)
 	(
 		input [ADDR_WIDTH-1:0] addr,
