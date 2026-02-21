@@ -3,7 +3,7 @@
 // I need a counter that count just up and always counting (till now, but I'll add a en signal for the future (stalls)  
 
 
-module prog_count #(parameter INST_MEMORY_SIZE = 1024, 
+module prog_count #(parameter INST_MEMORY_SIZE = 16384, 
 
 	parameter ADDR_WIDTH = $clog2(INST_MEMORY_SIZE)
 )

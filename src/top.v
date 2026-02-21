@@ -111,7 +111,7 @@ module top (
 	
 	wire [63:0] pc_64_addr_if ; 	
 	reg [63:0] pc_nxt_addr_if ; 
-	wire [9:0]  pc_addr_if ; // it should be [ADDR_WIDRH-1:0]  
+	wire [13:0]  pc_addr_if ; // it should be [ADDR_WIDRH-1:0]  
 	reg [4:0] pc_addr_low_bits ; 
 	wire [1:0] our_prediction ; 	
 	
@@ -580,7 +580,7 @@ module top (
                 .sel_imem(sel_imem_mem), 
                 .sel_dmem(sel_dmem_mem), 
                 .sel_uart(sel_uart_mem), 
-                .sel_gpio(sel_gpio_mem),
+                .sel_gpio(sel_gpio_mem)
 	);
 
 
