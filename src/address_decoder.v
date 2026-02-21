@@ -3,7 +3,7 @@ module address_decoder (
     output         sel_imem,    // Instruction memory
     output         sel_dmem,    // Data memory
     output         sel_uart,    // UART peripheral
-    output         sel_gpio,    // GPIO peripheral
+    output         sel_gpio    // GPIO peripheral
 );
 //===========================================================================
 // Address Map
