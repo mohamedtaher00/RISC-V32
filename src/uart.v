@@ -32,7 +32,7 @@ module uart (
                 .clk(clk),
 		.data_in(uart_regs[0]), // assumption nour has to take care of 
                 .data_out(data_out_tx), 
-                .done(tx_done), 
+                .done(tx_done) 
 	); 
 
 
