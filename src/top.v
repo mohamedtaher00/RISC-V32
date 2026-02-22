@@ -553,7 +553,7 @@ module top (
 		mem_wb_current_state [45:41] <= previous_prediction_addr_mem[4:0] ; 
 	end 
 
-	data_mem # (.MEMORY_SIZE(2048)) Data_MEM(
+	data_mem # (.MEMORY_SIZE(12288)) Data_MEM(
 	.clk(clk),
 	.addr(alu_result_mem[$clog2(2048)-1:0]),
 	.we(ex_mem[2] & sel_dmem_mem), //memory write ctrl signal 
