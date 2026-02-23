@@ -24,7 +24,7 @@ module instr_mem_wrapper (
     assign r_addr = (stall) ? readed_addr - 3'd4 : readed_addr  ; 
     instr_mem imem (
         .clk        	(clk),
-        .read_addr  	(read_addr),
+        .read_addr  	(r_addr),
         .readed_data 	(readed_data),
         .write_addr 	(write_addr),
         .write_data	(write_data),
