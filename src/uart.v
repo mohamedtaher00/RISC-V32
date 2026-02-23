@@ -21,6 +21,8 @@ module uart (
 	wire [7:0] ctrl_signals ;
         reg [31:0] uart_regs_nxt ; 	
 
+	reg [7:0] uart_regs [15:0] ;
+	
 	assign status_signals = {5'b0, tx_done, rx_done, rx_err } ; 
 	assign ctrl_signals = uart_regs[12] ; 
 	assign rst = ctrl_signals[2] ; 	
@@ -48,7 +50,7 @@ module uart (
 
 	// UART registers 
 
-	reg [7:0] uart_regs [15:0] ;
+
        //write logic 	
 	always @(posedge clk) begin 
 		        uart_regs[addr]   <= uart_regs_nxt[7:0] ; 
