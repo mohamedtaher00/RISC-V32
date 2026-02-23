@@ -251,7 +251,7 @@ module top (
 		.c_out()//we'll ignore the overflow for now 
 	);
     // program counter
-	prog_count  # (.INST_MEMORY_SIZE(1024)) Program_counter(
+	prog_count  # (.INST_MEMORY_SIZE(16384)) Program_counter(
 		.clk(clk),
 		.reset_n(reset_n),
 		.stall(stall_cnt), 
@@ -260,7 +260,7 @@ module top (
 		.addr_2_IF_ID_pipeline_reg(pc_64_addr_if)
 	);
 	// instruction memory 	
-	instruction_mem #(.INST_MEMORY_SIZE(1024)) Instruction_MEM(
+	instruction_mem #(.INST_MEMORY_SIZE(16384)) Instruction_MEM(
 		.clk(clk),
 		.stall(stall_cnt), 
 		.read_addr(pc_addr_if), 
@@ -553,17 +553,23 @@ module top (
 		mem_wb_current_state [45:41] <= previous_prediction_addr_mem[4:0] ; 
 	end 
 
-	data_mem # (.MEMORY_SIZE(12288)) Data_MEM(
-	.clk(clk),
-	.addr(alu_result_mem[$clog2(2048)-1:0]),
-	.we(ex_mem[2] & sel_dmem_mem), //memory write ctrl signal 
-	.re(ex_mem[3]), //memory read ctrl signal  it's no effect on the data_mem really, but maybe the logic appeaers in the future and we add it (i predict the nop)	
-	.w_data_MEM(ex_mem [133:102]),
-	.data(readed_data_mem_mem) 
-	); 	
+//	data_mem # (.MEMORY_SIZE(12288)) Data_MEM(
+//	.clk(clk),
+//	.addr(alu_result_mem[$clog2(2048)-1:0]),
+//	.we(ex_mem[2] & sel_dmem_mem), //memory write ctrl signal 
+//	.re(ex_mem[3]), //memory read ctrl signal  it's no effect on the data_mem really, but maybe the logic appeaers in the future and we add it (i predict the nop)	
+//	.w_data_MEM(ex_mem [133:102]),
+//	.data(readed_data_mem_mem) 
+//	);
 
-
-
+	data_mem_wrapper data_mem(
+	.clk		(clk),
+	.data_addr	(alu_result_mem[13:0]), 
+	.w_data_MEM	(ex_mem[133:102]), 
+	.mem_wren	(ex_mem[2] & sel_dmem_mem), 
+	.funct3		(), 
+	.data		(readed_data_mem_mem) 
+	); 
 
 
 	// Address decoder 
