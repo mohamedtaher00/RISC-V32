@@ -1,10 +1,9 @@
 module data_mem_wrapper (
-    input clk,
 
     // Data load/store port
-    input clk 
+    input clk, 
     input [13:0] data_addr, // addr 
-    input [31:0] W_data_MEM, //w_data_MEM   // rs2 from register file
+    input [31:0] w_data_MEM, //w_data_MEM   // rs2 from register file
     input        mem_wren,  // we 
     input [2:0]  funct3,   // wasn't exist before ADD THIS      // encodes lb/lh/lw/sb/sh/sw
     output reg  [31:0] data // data
@@ -19,7 +18,7 @@ module data_mem_wrapper (
     always @(*) begin
         case (funct3)
             3'b000: begin  // sb
-                data_in = {4{W_data_MEM[7:0]}};
+                data_in = {4{w_data_MEM[7:0]}};
                 case (data_addr[1:0])
                     2'b00: byteena = 4'b0001;
                     2'b01: byteena = 4'b0010;
@@ -28,14 +27,14 @@ module data_mem_wrapper (
                 endcase
             end
             3'b001: begin  // sh
-                data_in = {2{W_data_MEM[15:0]}};
+                data_in = {2{w_data_MEM[15:0]}};
                 case (data_addr[1])
                     1'b0: byteena = 4'b0011;
                     1'b1: byteena = 4'b1100;
                 endcase
             end
             default: begin // sw
-                data_in = W_data_MEM;
+                data_in = w_data_MEM;
                 byteena = 4'b1111;
             end
         endcase
