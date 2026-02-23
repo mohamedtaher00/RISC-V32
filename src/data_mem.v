@@ -14,7 +14,7 @@ module data_mem
 //		input [13:0] byte_addr, 
                 input [3:0]  byteena,
 
-		output reg [31:0] data // data_out  
+		output [31:0] data // data_out  
 	); 
 
       
