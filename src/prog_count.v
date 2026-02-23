@@ -27,7 +27,7 @@ module prog_count #(parameter INST_MEMORY_SIZE = 16384,
         wire [31:0] prog_counter_next_addr_tb ;
         wire [63:0] prog_counter_64_bit_addr_tb ; 
 
-	assign addr_2_IF_ID_pipeline_reg = {{54{1'b0}}, {addr_2_INST_MEM}} ; 
+	assign addr_2_IF_ID_pipeline_reg = {{50{1'b0}}, {addr_2_INST_MEM}} ; 
 	// current state logic
 	always @(posedge clk) begin 
 		if (~reset_n) begin 
