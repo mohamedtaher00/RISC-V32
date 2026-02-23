@@ -260,15 +260,26 @@ module top (
 		.addr_2_IF_ID_pipeline_reg(pc_64_addr_if)
 	);
 	// instruction memory 	
-	instruction_mem #(.INST_MEMORY_SIZE(16384)) Instruction_MEM(
-		.clk(clk),
-		.stall(stall_cnt), 
-		.read_addr(pc_addr_if), 
-		.write_addr(ex_mem[101:70] ),// [101:70] alu_result 
-		.write_data(ex_mem[133:102]), // write data
-		.w_en(sel_imem_mem & ex_mem[2] ), // ex_mem[2] mem_write ctrl signal 
-		.readed_data(instruction) 
-	);  
+//	instruction_mem #(.INST_MEMORY_SIZE(16384)) Instruction_MEM(
+//		.clk(clk),
+//		.stall(stall_cnt), 
+//		.read_addr(pc_addr_if), 
+//		.write_addr(ex_mem[101:70] ),// [101:70] alu_result 
+//		.write_data(ex_mem[133:102]), // write data
+//		.w_en(sel_imem_mem & ex_mem[2] ), // ex_mem[2] mem_write ctrl signal 
+//		.readed_data(instruction) 
+//	); 
+	
+	// instr_mem_wrapper 
+	instr_mem_wrapper inst_mem(
+	        .clk			(clk),
+	        .read_addr 		(pc_addr_if), 
+		.readed_data		(instruction),
+		.write_addr		(ex_mem[101:70]), 
+		.write_data		(ex_mem[133:102]), 
+		.w_en			(sel_imem_mem & ex_mem[2]),
+		.stall			(stall_cnt) 
+	); 
 	    	  
        // o/p logic for IF/ID pipeline register 	
 	assign if_id [95:64] = instruction ; 
