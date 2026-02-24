@@ -8,7 +8,6 @@ module instruction_mem
 		
 		output [31:0] readed_data,  // instruction  
 	        
-		input stall,
 			
     		// Port B — programming port (write only)
 		input [ADDR_WIDTH-1:0] write_addr, 
@@ -57,7 +56,7 @@ module instruction_mem
         altsyncram_component.widthad_b                          = 12,
         altsyncram_component.numwords_b                         = 4096, // 16384 bytes / 4 = 4096 words 
         altsyncram_component.outdata_reg_a                      = "CLOCK0",
-       // altsyncram_component.outdata_reg_b                      = "CLOCK0",
+        altsyncram_component.outdata_reg_b                      = "CLOCK0",
         altsyncram_component.read_during_write_mode_mixed_ports = "OLD_DATA", //This shouldn't happen, it's software responsibility
         altsyncram_component.intended_device_family             = "Cyclone V",
         altsyncram_component.ram_block_type                     = "AUTO", 
