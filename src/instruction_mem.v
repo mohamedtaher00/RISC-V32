@@ -5,7 +5,7 @@ module instruction_mem
 		// Port A  - fetch (read)
 		input clk, 
 		input [ADDR_WIDTH-1:0] read_addr, // pc
-		
+	
 		output [31:0] readed_data,  // instruction  
 	        
 			
@@ -30,21 +30,24 @@ module instruction_mem
         .data_a 	(write_data),
         .wren_a         (w_en),
 
+
         // Port B — read 
         .address_b      (word_addr_b),
         .q_b		(readed_data),
-        .wren_b         (1'b0)
+        .wren_b         (1'b0), 
+	.addressstall_b (1'b0), 
 
         // unused
-      // .aclr0          (1'b0),
-      // .aclr1          (1'b0),
-      // .addressstall_a (1'b0),
-      // .addressstall_b (1'b0),
-      // .byteena_a      (1'b1), // no need to make the Instruction MEM byte-addressable
-      // .byteena_b      (1'b1), // no need to make the Instruction MEM byte-addressable
-      // .clocken0       (1'b1),
-      // .clocken1       (1'b1),
-      // .data_a         (32'b0),
+       .aclr0          (1'b0),
+       .aclr1          (1'b0),
+       .addressstall_a (1'b0),
+       .byteena_a      (1'b1), // no need to make the Instruction MEM byte-addressable
+       .byteena_b      (1'b1), // no need to make the Instruction MEM byte-addressable
+       .clocken0       (1'b1),
+       .clocken1       (1'b1), 
+       .data_b	       (32'b0), 
+       .q_a		(), 
+       .eccstatus      () 
     );
 
     defparam
@@ -55,11 +58,11 @@ module instruction_mem
         altsyncram_component.width_b                            = 32,
         altsyncram_component.widthad_b                          = 12,
         altsyncram_component.numwords_b                         = 4096, // 16384 bytes / 4 = 4096 words 
-        altsyncram_component.outdata_reg_a                      = "CLOCK0",
-        altsyncram_component.outdata_reg_b                      = "CLOCK0",
+        altsyncram_component.outdata_reg_a                      = "UNREGISTERED",
+        altsyncram_component.outdata_reg_b                      = "UNREGISTERED",
         altsyncram_component.read_during_write_mode_mixed_ports = "OLD_DATA", //This shouldn't happen, it's software responsibility
         altsyncram_component.intended_device_family             = "Cyclone V",
         altsyncram_component.ram_block_type                     = "AUTO", 
-    	altsyncram_component.init_file 				= "table.hex" ; 
+    	altsyncram_component.init_file 				= "table.mif" ; 
 
 endmodule
