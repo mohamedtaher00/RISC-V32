@@ -39,38 +39,41 @@ UART_CTRL   = UART_BASE + 0x0C
 # Reset vector jumps here
 entry:
 	li sp, STACK_BASE
-	jal wait_sync
-	jal read_word # Read size
-	mv s0, a0
-	beqz s0, err
+	jal ra, uart_reset
+	jal ra, wait_sync
+	jal ra, read_word # Read size
+	add s0, a0, zero
+	beq s0, zero, err
 	li s1, PROG_START
 
 # Store the program from UART to the text section of the memory
 receive_loop:
-    beqz s0, done_loading
-    call read_word
-    sw a0, 0(s1)
+    beq s0, zero, done_loading
+    jal read_word
+    sb a0, 0(s1)
     addi s1, s1, 1
     addi s0, s0, -1
-    j receive_loop
+    jal x0, receive_loop
 
 # Jump to the start of the program
 done_loading:
-    j program_start
+	li t1, PROG_START
+    jalr x0, t1, 0
 
 ## Helpers
 
 # Read a word from the UART
 read_word:
+	addi sp, sp, -4
+	sw ra, 0(sp)
     li t0, UART_BASE
     li t1, UART_RX
 wait_rx:
-    li t2, UART_STATUS
-    lw t3, 0(t2)
-    andi t3, t3, UART_RX_DONE
-    beqz t3, wait_rx
-    lw a0, 0(t1)
-    ret
+	jal ra, read_verify
+    lb a0, 0(t1)
+	lw ra, 0(sp)
+	addi sp, sp, 4
+    jalr x0, ra, 0
 
 
 # Wait for magic word from the UART
@@ -79,19 +82,62 @@ wait_sync:
 	sw ra, 0(sp)
     li t2, SYNC_WORD
 wait_loop:
-    call read_word
+    jal ra, read_word
     beq a0, t2, sync_found
-    j wait_loop
+    jal x0, wait_loop
 sync_found:
 	lw ra, 0(sp)
 	addi sp, sp, 4
-    ret
+    jalr x0, ra, 0
 
 
-# Spin 
-err:
+# Reset the UART
+uart_reset:
+	addi sp, sp, -8
+	sw s1, 0(sp)
+	sw s2, 4(sp)
+
+	li s1, UART_CTRL
+	li s2, UART_RST
+	sb s2, 0(s1) #100 -> CON
+	sb x0, 0(s1) #000 -> CON
+
+	lw s1, 0(sp)
+	lw s2, 4(sp)
+	addi sp, sp, 8
+	jalr x0, ra, 0
+
+
+# Verify UART read or spin if no confirmation
+# clear the status register
+read_verify:
+	li t1, UART_STATUS
+	li t3, UART_RX_ERR # mask to check error
 loop:
-	jal x0, loop
+	lw t2, 0(t1)
+	andi t2, t2, UART_RX_ERR
+	beq t2,t3,err
+	andi t4, t2, UART_RX_DONE
+	beq t4, zero, loop # loop until received
+	sb zero, 0(t1) # clear the flag
+	jalr x0, ra, 0
 
-.org 0x00000800
-program_start:
+# Enable the UART transmitter
+tx_enable:
+	li t1, UART_CTRL
+	li t2, UART_TX_EN
+	sb t2, 0(t1)
+	jalr x0, ra, 0
+
+# Enable the UART receiver
+rx_enable:
+	li t1, UART_CTRL
+	li t2, UART_RX_EN
+	sb t2, 0(t1)
+	jalr x0, ra, 0
+
+
+# Spin
+err:
+spin:
+	jal x0, spin
