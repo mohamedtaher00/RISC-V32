@@ -12,7 +12,7 @@ module reg_file
 		output reg [WIDTH-1:0] read_reg2
 	); 
 	initial begin 
-		$readmemb("reg_file_table.mem", mem) ;	
+		$readmemh("reg_file_table.mem", mem) ;	
 	end 
 	localparam DEPTH = 2**ADDR_WIDTH ;
 	(* ramstyle = "M9K" *) reg [WIDTH-1:0] mem [0:DEPTH-1] ;
