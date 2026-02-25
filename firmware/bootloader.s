@@ -8,7 +8,7 @@
 # | MAGIC | SIZE | 		  PROGRAM          |
 # ------------------------------------------
 
-# Supported instructions: lw, sw, beq, add, sub, and, or, addi, lui, jal
+# Supported instructions: lw, sw, beq, add, sub, and, or, addi, lui, jal, jal, andi, lb, sb
 
 # Memory map
 ##
