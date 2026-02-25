@@ -8,7 +8,7 @@
 //   [102:98] = pc_addr_low_bits
 // 
 //
-// id_ex [257:0]:
+// id_ex [260:0]:
 //   [7:0] =     id_ex_ctrl_unit_current    
 //   [71:8] =    id_ex_pc_current    
 //   [103:72] =  reg_file_out1_id 			 
@@ -20,10 +20,11 @@
 //   [186:183] = id_ex_alu_ctrl_current 
 //   [250:187] = id_ex_return_addr_current	
 //   [252:251] = id_ex_our_prediction_current  	
-//   [257:253] = id_ex_previous_prediction_addr_current 
+//   [257:253] = id_ex_previous_prediction_addr_current
+//   [260:258] = instruction[14:12] // funct3 field  
 //
 //
-// ex_mem [145:0] :  
+// ex_mem [148:0] :  
 //   [4:0] = ctrl_signals_ex 
 //   [68:5]     = return_addr_ex
 //   [69]	   = zero_flag 	      
@@ -32,7 +33,8 @@
 //   [138:134]   = rd_ex 	   
 //   [139]	   = branch_mispredicted_mem  
 //   [144:140]   = previous_prediction_addr_ex_mem 
-//   [145]	   = final_verdict 
+//   [145]	   = final_verdict
+//   [148:146]   = id_ex[260:258] // funct3 field  
 //
 //
 // mem_wb [77:0] :
@@ -117,7 +119,7 @@ module top (
 	
 	
 	// ID stage intermediate signals 
-	wire [257:0] id_ex ; // 32(register1)+ 32(register2)+ 32(imm) +64(PC) +15(addresses of two sources and dest)+ 4(alu_ctrl)+ 8(ctrl lines)
+	wire [260:0] id_ex ; // 32(register1)+ 32(register2)+ 32(imm) +64(PC) +15(addresses of two sources and dest)+ 4(alu_ctrl)+ 8(ctrl lines)
 	
 	
 	// control_unit/data path interface
@@ -135,7 +137,10 @@ module top (
 	reg  [63:0] return_addr_id ;
 
 	wire [31:0] immgen_out_id ; 
-
+	
+	reg [2:0] id_ex_funct3_current ; 
+	
+	wire [2:0] id_ex_funct3_nxt ; 	
 
 	reg [7:0] id_ex_ctrl_unit_current ;   
         reg [63:0] id_ex_pc_current; 
@@ -173,7 +178,7 @@ module top (
 
 
 	// EX stage intermediate signals 
-	wire [145:0] ex_mem ; //64(calculated address) + 32(alu_o/p) + 1(zero_flag) + 5(destination_reg) + 32(store data if sw) + 5 (rest of ctrl_unit)
+	wire [148:0] ex_mem ; //64(calculated address) + 32(alu_o/p) + 1(zero_flag) + 5(destination_reg) + 32(store data if sw) + 5 (rest of ctrl_unit)
 	
 	
 	// Alu/data path interface
@@ -188,6 +193,9 @@ module top (
 	
 	wire final_verdict ;
 
+	reg [2:0] funct3_ex_current ;
+
+	wire [2:0] funct3_ex 	; 
 
 	wire [4:0] ctrl_signals_ex ;
 	wire [31:0] write_data_ex ; 
@@ -275,7 +283,7 @@ module top (
 	        .clk			(clk),
 	        .read_addr 		(pc_addr_if), 
 		.readed_data		(instruction),
-		.write_addr		(ex_mem[101:70]), 
+		.write_addr		(ex_mem[83:70]),// it was ex_mem[101:70]
 		.write_data		(ex_mem[133:102]), 
 		.w_en			(sel_imem_mem & ex_mem[2]),
 		.stall			(stall_cnt) 
@@ -357,7 +365,8 @@ module top (
 	assign id_ex [186:183] = id_ex_alu_ctrl_current ;
 	assign id_ex [250:187] = id_ex_return_addr_current	;
         assign id_ex [252:251] = id_ex_our_prediction_current ; 	
-	assign id_ex [257:253] = id_ex_previous_prediction_addr_current ; 
+	assign id_ex [257:253] = id_ex_previous_prediction_addr_current ;
+        assign id_ex [260:258] = id_ex_funct3_current ; 	
 
 
 	always @(posedge clk) begin //stuff that needed to be clocked  ; current state logic  
@@ -370,7 +379,8 @@ module top (
 		id_ex_rs2_current	<= id_ex_rs2_nxt ; 
 	        id_ex_return_addr_current <= id_ex_return_addr_nxt ; 
 		id_ex_our_prediction_current <= id_ex_our_prediction_nxt ; 
-		id_ex_previous_prediction_addr_current <= id_ex_previous_prediction_addr_nxt ;  	
+		id_ex_previous_prediction_addr_current <= id_ex_previous_prediction_addr_nxt ;  
+		id_ex_funct3_current	<= id_ex_funct3_nxt ; 	
 	end
 
 	// next state logic 	
@@ -383,7 +393,8 @@ module top (
         assign id_ex_rs1_nxt  = if_id[83:79] ; 
         assign id_ex_rs2_nxt  = if_id[88:84] ;
         assign id_ex_return_addr_nxt = return_addr_id ; 
-        assign id_ex_previous_prediction_addr_nxt = if_id[102:98] ; 
+        assign id_ex_previous_prediction_addr_nxt = if_id[102:98] ;
+	assign id_ex_funct3_nxt = instruction[14:12] ; 	
 
 
 
@@ -433,7 +444,8 @@ module top (
 	assign write_data_ex = id_ex[135:104] ;
 	assign ctrl_signals_ex = id_ex [4:0] ;
 	assign return_addr_ex = id_ex [250:187] ; 
-	assign previous_prediction_addr_ex_mem = id_ex [257:253] ; 
+	assign previous_prediction_addr_ex_mem = id_ex [257:253] ;
+        assign funct3_ex = id_ex[260:258] ; 	
 
 	always @(posedge clk) begin 
 		//current_state logic
@@ -452,9 +464,11 @@ module top (
 		ex_mem_current_state [139]	   <= branch_mispredicted_mem  ;
 		ex_mem_current_state [144:140]   <= previous_prediction_addr_ex_mem ;
 		ex_mem_current_state [145]	   <= final_verdict ;  
+		funct3_ex_current <= funct3_ex 	; 
 	end
        // output logic 
 	assign ex_mem = {
+		funct3_ex_current, 
 		ex_mem_current_state [145] , 
 		ex_mem_current_state [144:140] , 
 		ex_mem_current_state  [139],  
@@ -578,7 +592,7 @@ module top (
 	.data_addr	(alu_result_mem[13:0]), 
 	.w_data_MEM	(ex_mem[133:102]), 
 	.mem_wren	(ex_mem[2] & sel_dmem_mem), 
-	.funct3		(), 
+	.funct3		(ex_mem[148:146]), 
 	.data		(readed_data_mem_mem) 
 	); 
 
