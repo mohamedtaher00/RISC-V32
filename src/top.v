@@ -8,7 +8,7 @@
 //   [102:98] = pc_addr_low_bits
 // 
 //
-// id_ex [260:0]:
+// id_ex [257:0]:
 //   [7:0] =     id_ex_ctrl_unit_current    
 //   [71:8] =    id_ex_pc_current    
 //   [103:72] =  reg_file_out1_id 			 
@@ -21,7 +21,6 @@
 //   [250:187] = id_ex_return_addr_current	
 //   [252:251] = id_ex_our_prediction_current  	
 //   [257:253] = id_ex_previous_prediction_addr_current
-//   [260:258] = instruction[14:12] // funct3 field  
 //
 //
 // ex_mem [148:0] :  
@@ -34,7 +33,7 @@
 //   [139]	   = branch_mispredicted_mem  
 //   [144:140]   = previous_prediction_addr_ex_mem 
 //   [145]	   = final_verdict
-//   [148:146]   = id_ex[260:258] // funct3 field  
+//   [148:146]   = id_ex[185:183] // funct3 field  
 //
 //
 // mem_wb [77:0] :
@@ -138,9 +137,7 @@ module top (
 
 	wire [31:0] immgen_out_id ; 
 	
-	reg [2:0] id_ex_funct3_current ; 
 	
-	wire [2:0] id_ex_funct3_nxt ; 	
 
 	reg [7:0] id_ex_ctrl_unit_current ;   
         reg [63:0] id_ex_pc_current; 
@@ -362,11 +359,10 @@ module top (
 	assign id_ex [172:168] = id_ex_rs1_current     ;
 	assign id_ex [177:173] = id_ex_rs2_current     ;
 	assign id_ex [182:178] = id_ex_rd_current      ;
-	assign id_ex [186:183] = id_ex_alu_ctrl_current ;
+	assign id_ex [186:183] = id_ex_alu_ctrl_current ; // {funct 7 sixth bit, funct3}
 	assign id_ex [250:187] = id_ex_return_addr_current	;
         assign id_ex [252:251] = id_ex_our_prediction_current ; 	
 	assign id_ex [257:253] = id_ex_previous_prediction_addr_current ;
-        assign id_ex [260:258] = id_ex_funct3_current ; 	
 
 
 	always @(posedge clk) begin //stuff that needed to be clocked  ; current state logic  
@@ -380,13 +376,12 @@ module top (
 	        id_ex_return_addr_current <= id_ex_return_addr_nxt ; 
 		id_ex_our_prediction_current <= id_ex_our_prediction_nxt ; 
 		id_ex_previous_prediction_addr_current <= id_ex_previous_prediction_addr_nxt ;  
-		id_ex_funct3_current	<= id_ex_funct3_nxt ; 	
 	end
 
 	// next state logic 	
         assign id_ex_our_prediction_nxt = if_id [97:96] ; 	
 	assign id_ex_ctrl_unit_nxt = stall_mux_out 	; 
-	assign id_ex_alu_ctrl_nxt = {if_id[94], if_id[78:76]} ;
+	assign id_ex_alu_ctrl_nxt = {if_id[94], if_id[78:76]} ; // {funct7 sixth bit, funct3}
 	assign id_ex_pc_nxt =  if_id[63:0] ;
         assign id_ex_immgen_nxt = immgen_out_id ;                	
         assign id_ex_rd_nxt   = if_id[75:71] ; 
@@ -394,7 +389,6 @@ module top (
         assign id_ex_rs2_nxt  = if_id[88:84] ;
         assign id_ex_return_addr_nxt = return_addr_id ; 
         assign id_ex_previous_prediction_addr_nxt = if_id[102:98] ;
-	assign id_ex_funct3_nxt = instruction[14:12] ; 	
 
 
 
@@ -445,7 +439,7 @@ module top (
 	assign ctrl_signals_ex = id_ex [4:0] ;
 	assign return_addr_ex = id_ex [250:187] ; 
 	assign previous_prediction_addr_ex_mem = id_ex [257:253] ;
-        assign funct3_ex = id_ex[260:258] ; 	
+        assign funct3_ex = id_ex[185:183] ; 	
 
 	always @(posedge clk) begin 
 		//current_state logic
@@ -496,7 +490,7 @@ module top (
  
 	alu_control ALU_Control(
 		.ALUOp(id_ex [7:6]),
-		.instruction(id_ex [186:183]),
+		.instruction(id_ex [186:183]), // {func7 6th bit 30th bit in the instruction, funct3} 
 		.alu_control_lines(alu_sel)
 	); 
   
