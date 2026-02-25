@@ -26,14 +26,14 @@ module data_mem
        		 .data_a         (w_data_MEM),
        		 .wren_a         (we),
        		 .byteena_a      (byteena),
-       		 .q_a            (data)
+       		 .q_a            (data), 
 
-        // unused
-       // .aclr0          (1'b0),
-       // .aclr1          (1'b0),
-       // .addressstall_a (1'b0),
-       // .clocken0       (1'b1),
-       // .clocken1       (1'b1)
+       		 // unused
+       		 .aclr0          (1'b0),
+       		 .aclr1          (1'b0),
+       		 .addressstall_a (1'b0),
+       		 .clocken0       (1'b1),
+       		 .clocken1       (1'b1)
     );
 
 
