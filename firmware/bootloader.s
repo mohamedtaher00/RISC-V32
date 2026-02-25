@@ -26,10 +26,15 @@ GPIO_BASE   = 0x80000010
 UART_TX     = UART_BASE + 0x00 
 UART_RX     = UART_BASE + 0x04 
 UART_STATUS = UART_BASE + 0x08
+UART_CTRL   = UART_BASE + 0x0C
 
-.set UART_RX_DONE, 0x01  
-.set UART_TX_DONE, 0x01  
-.set SYNC_WORD, 0xDEADBEEF
+.set UART_RX_DONE, 0x02
+.set UART_TX_DONE, 0x04
+.set UART_RX_ERR , 0x01
+.set UART_RST    , 0x04
+.set UART_TX_EN  , 0x02
+.set UART_RX_EN  , 0x01
+.set SYNC_WORD   , 0xEF
 
 # Reset vector jumps here
 entry:
