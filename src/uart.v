@@ -26,7 +26,8 @@ module uart (
 	assign status_signals = {5'b0, tx_done, rx_done, rx_err } ; 
 	assign ctrl_signals = uart_regs[12] ; 
 	assign rst = ctrl_signals[2] ; 	
-
+	assign tx_en = ctrl_signals[1] ; 
+	assign rx_en = ctrl_signals[0] ; 
 
 	tx transmitter(
 		.tx_en(tx_en), 
@@ -58,8 +59,14 @@ module uart (
 			uart_regs[addr+2] <= uart_regs_nxt[23:16] ; 
 			uart_regs[addr+3] <= uart_regs_nxt[31:24] ; 
 			//status & rx are hardwired to rx o/p and status signals 
-			uart_regs[4] <= data_out_rx ; 
+			uart_regs[4] <= data_out_rx ;
+			uart_regs[5] <= 8'b0 ; 
+			uart_regs[6] <= 8'b0 ; 
+			uart_regs[7] <= 8'b0 ; 
 			uart_regs[8] <= status_signals ; 
+			uart_regs[9] <= 8'b0 ; 
+			uart_regs[10] <= 8'b0  ; 
+			uart_regs[11] <= 8'b0  ; 
 	end 
 
 		// 0x00000000 - 0x00003FFF  : Instruction Memory (16KB)
