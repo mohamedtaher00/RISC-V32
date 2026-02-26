@@ -41,7 +41,7 @@ entry:
 	li sp, STACK_BASE
 	jal ra, uart_reset
 	jal ra, wait_sync
-	jal ra, read_word # Read size
+	jal ra, read_byte # Read size
 	add s0, a0, zero
 	beq s0, zero, err
 	li s1, PROG_START
@@ -49,7 +49,7 @@ entry:
 # Store the program from UART to the text section of the memory
 receive_loop:
     beq s0, zero, done_loading
-    jal read_word
+    jal read_byte
     sb a0, 0(s1)
     addi s1, s1, 1
     addi s0, s0, -1
@@ -63,7 +63,7 @@ done_loading:
 ## Helpers
 
 # Read a word from the UART
-read_word:
+read_byte:
 	addi sp, sp, -4
 	sw ra, 0(sp)
     li t0, UART_BASE
@@ -82,7 +82,7 @@ wait_sync:
 	sw ra, 0(sp)
     li t2, SYNC_WORD
 wait_loop:
-    jal ra, read_word
+    jal ra, read_byte
     beq a0, t2, sync_found
     jal x0, wait_loop
 sync_found:
