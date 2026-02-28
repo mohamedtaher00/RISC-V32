@@ -3,7 +3,7 @@
 # These instructions are mainly
 # addi, andi, lb, sb
 #
-.set DATA, 0xFFF
+.set DATA, 0x7FF
 start:
 # Test addi for a positive number
 # (This also tests a load after a store)
