@@ -3,10 +3,11 @@
 # These instructions are mainly
 # addi, andi, lb, sb
 #
+.set DATA, 0x4000
 start:
 # Test addi for a positive number
 # (This also tests a load after a store)
-	addi x18, x0, 0x80 # Some random address
+	addi x18, x0, DATA # Some random address
 	addi x19, x0, 0x7F
 	sb x19, 0(x18) # Memory should contain 0000007f 
 	lb x20, 0(x18) # x20 should contain 0000007f
