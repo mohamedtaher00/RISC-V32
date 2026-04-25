@@ -11,7 +11,7 @@ module control_unit (
   always @(*) begin
 	  {branch, Memread, Memtoreg, AluOp, Memwrite, Alusrc, Regwrite} ='b 0 ; 
       	  case(instruction[6:0])
-		  7'b0110011 : begin // R-format b
+		  7'b0110011 : begin // R-format  
 			  Alusrc = 1'b0 ;
 			  Memtoreg = 1'b0 ;
 			  Regwrite = 1'b1 ;
@@ -45,7 +45,7 @@ module control_unit (
 			  Memread = 1'b0 ;
 			  Memwrite = 1'b0 ;
 			  branch = 1'b0 ;
-			  AluOp = 2'b10 ;
+			  AluOp = 2'b11 ;
 		  end	
 		  7'b0100011 : begin // S-type sw, sb, sh 
 			  Alusrc = 1'b1 ;
