@@ -51,7 +51,7 @@ module alu_control (
          		   if (instruction[3] == 1'b1)
          		     alu_control_lines = 4'b0110; // sub
          		   else
-         		     alu_control_lines = 4'b0010; // add / addi
+         		     alu_control_lines = 4'b0010; // add / addi ** addi don't have func7 **
          		
 			 3'b001: alu_control_lines = 4'b0101; // sll / slli
          		 3'b100: alu_control_lines = 4'b0100; // xor / xori
@@ -66,6 +66,26 @@ module alu_control (
          		 default: alu_control_lines = 4'b0010;
 	        endcase
       end
+	2'b 11 : begin 
+		case (instruction[2:0]) 
+			3'b000: // addi -> add operation
+				alu_control_lines = 4'b0010 ; 
+			3'b100: // xori -> xor operation
+				alu_control_lines = 4'b0100 ; 
+			3'b110: // ori -> or operation  
+				alu_control_lines = 4'b0001 ;
+		        3'b111: // andi -> and operation 
+				alu_control_lines = 4'b0000 ; 
+			3'b001: // slli -> shift left logical operation
+				alu_control_lines = 4'b0101 ; 
+			3'b101: // srli -> shift right logical operation or srai -> shift right arithmetic operation. Use func7 to tell them apart!
+			        alu_control_lines = (instruction[3]) ? 4'b1000 : 4'b0111 ; 	
+			3'b010: // slti -> set less than immediate 
+				alu_control_lines = 4'b1001 ; 
+			3'b011: // sltiu -> set less than immediate (U)
+				alu_control_lines = 4'b1010 ; 
+		endcase 
+	end 	
 
       default: alu_control_lines = 4'b0010;
 
