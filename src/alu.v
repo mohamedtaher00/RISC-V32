@@ -18,7 +18,7 @@ module alu(
   // 0101 = SLL (shift left logical)
   // 0111 = SRL (shift right logical)
   // 1000 = SRA (shift right arithmetic)
-  // 1001 = SLT (signed less than)
+  // 1001 = SLT (signed less than) set less than 
   // 1010 = SLTU (unsigned less than)
 
 
