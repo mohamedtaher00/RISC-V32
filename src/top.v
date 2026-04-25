@@ -36,14 +36,15 @@
 //   [148:146]   = id_ex[185:183] // funct3 field  
 //
 //
-// mem_wb [77:0] :
+// mem_wb [82:0] :
 //   [1:0]   = ctrl_signals_mem ;	
 //   [33:2] = readed_data_mem ; 
 //   [65:34] = alu_result_mem ; 
 //   [70:66] = rd_mem		;
 //   [71]    = we_were_wrong_wb ; 
 //   [72]    = branch_mem 	; 
-//   [77:73] = previous_prediction_addr_mem 
+//   [77:73] = previous_prediction_addr_mem
+//   [80:78] = ex_mem [148:146] // funct3 field (to handle/mask loaded data from data_mem for loads) 
 //
 //
 //============================================================================
@@ -205,7 +206,7 @@ module top (
 	
 	
 	// MEM stage intermediate signals 
-	wire [77:0] mem_wb ; //32(read data) + 32(alu_result_mem) + 2(WB control signals) + Rd = 71 
+	wire [80:0] mem_wb ; //32(read data) + 32(alu_result_mem) + 2(WB control signals) + Rd = 71 
 	
 	wire [31:0] readed_data_mem ; 
 	wire [31:0] readed_data_mem_mem 	;
@@ -225,7 +226,10 @@ module top (
 	wire [31:0] readed_data_uart ; 
 	
 	//WB stage intermediate signals 
-	reg [45:0] mem_wb_current_state ; 
+	reg [48:0] mem_wb_current_state ;
+        
+	wire [31:0] loaded_data ; 
+	wire [2:0] funct3_mem ; 	
 	
 	wire we_were_wrong_wb 	; 
 
@@ -544,7 +548,9 @@ module top (
 
 	assign readed_data_mem = (sel_uart_mem) ? readed_data_uart : readed_data_mem_mem ; 	
 	//output logic 
-	assign mem_wb = { 	mem_wb_current_state [45:41], 
+	assign mem_wb = { 	
+						mem_wb_current_state [48:46], 	
+						mem_wb_current_state [45:41], 
 						mem_wb_current_state [40], 	
 						mem_wb_current_state [39]  , 	
 						mem_wb_current_state [38:34], 
@@ -559,7 +565,8 @@ module top (
 	assign rd_mem = ex_mem [138:134] ; 
 	assign we_were_wrong_wb = ex_mem [139] ; 
 	assign branch_mem = ex_mem[4] ;
-	assign previous_prediction_addr_mem [4:0] = ex_mem[144:140]	; 
+	assign previous_prediction_addr_mem [4:0] = ex_mem[144:140]	;
+	assign funct3_mem = ex_mem[148:146] ; 	
 	// current sate logic 
 	
 	always @(posedge clk) begin
@@ -569,7 +576,8 @@ module top (
 		mem_wb_current_state [38:34] <= rd_mem		;
 		mem_wb_current_state [39]    <= we_were_wrong_wb ; 
 		mem_wb_current_state [40]    <= branch_mem 	; 
-		mem_wb_current_state [45:41] <= previous_prediction_addr_mem[4:0] ; 
+		mem_wb_current_state [45:41] <= previous_prediction_addr_mem[4:0] ;
+	        mem_wb_current_state [48:46] <= funct3_mem ; 	
 	end 
 
 //	data_mem # (.MEMORY_SIZE(12288)) Data_MEM(
@@ -581,7 +589,7 @@ module top (
 //	.data(readed_data_mem_mem) 
 //	);
 
-	data_mem_wrapper data_mem(
+	data_mem_wrapper data_mem_ (
 	.clk		(clk),
 	.data_addr	(alu_result_mem[13:0]), 
 	.w_data_MEM	(ex_mem[133:102]), 
@@ -621,10 +629,22 @@ module top (
 		.readed_data(readed_data_uart) 
 	); 	
 
-  //WB stage 
+  //WB stage
+	
+
+	// masking data for loads(either from UART or data_mem)	
+   	  
+	mask_loads mask (
+                               
+         .funct3(mem_wb[80:78]), 
+         .raw_data(mem_wb[33:2]),
+         .data_addr(mem_wb[35:34]),
+                               
+         .data(loaded_data) 
+	); 
 
 	// third mux (write back mux)
-	assign write_back_data  = mem_wb[0] ? mem_wb [33:2] : mem_wb [65:34] ;
+	assign write_back_data  = mem_wb[0] ? loaded_data : mem_wb [65:34] ; // you'll need to change the mem_wb[33:2] to the output of mask_loads
 	assign regwrite_ctrl_wb = mem_wb[1] ; 
 
 		
