@@ -36,9 +36,9 @@
 //   [148:146]   = id_ex[185:183] // funct3 field  
 //
 //
-// mem_wb [82:0] :
+// mem_wb [80:0] :
 //   [1:0]   = ctrl_signals_mem ;	
-//   [33:2] = readed_data_mem ; 
+//   [33:2]  = readed_data_mem ; 
 //   [65:34] = alu_result_mem ; 
 //   [70:66] = rd_mem		;
 //   [71]    = we_were_wrong_wb ; 
@@ -525,7 +525,7 @@ module top (
 		  2'b10 :  
 			alu_src_1 = ex_mem [101:70]   ; 
 		  2'b01 : 
-			alu_src_1 = mem_wb [65:34]    ; 
+			alu_src_1 = (mem_wb[0]) ? mem_wb[32:2] : mem_wb [65:34]    ;  // [0] is mem_to_reg ctrl signal, [32:2] is readed_data_mem, [65:34] is the alu_result
 			default : alu_src_1 = id_ex [103:72] ; 
 		endcase 
 	end 
