@@ -9,13 +9,18 @@ module immgen (
 
 
   always @(*) begin
-	  imm = {32{1'b0}} ; 
     case (instruction[6:0])
-      7'b0000011 : imm = {{20{instruction[31]}}, instruction[31:20]}; // lw (I-type) 
-      7'b0100011 : imm = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; //sw (S-type)
-      7'b1100011 : imm = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0}; //beq (SB-type) // reconstruction of immediate
+
+      	    7'b0000011 : imm = {{20{instruction[31]}}, instruction[31:20]}; // I-type lw, lb, lh, lbu, lhu 
+	    7'b0010011 : imm = {{20{instruction[31]}}, instruction[31:20]}; // I-type addi, slli, xori, srli, srai, ori, andi 
+	    7'b1100111 : imm = {{20{instruction[31]}}, instruction[31:20]}; //jalr
+	    7'b0100011 : imm = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; //sw, sh, sb (S-type)
+      	    7'b1100011 : imm = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0}; //beq, bne, blt, bge, bltu, bgeu (SB-type) // reconstruction of immediate
+      	    7'b0110111 : imm = {instruction[31:12], 12'b0}; // U-type lui 
+      	    7'b0010111 : imm = {instruction[31:12], 12'b0}; // U-type auipc
+	    7'b1101111 : imm = {{11{instruction[31]}}, instruction[31], instruction[19:12], instruction[20], instruction[30:21], 1'b0}; // UJ-type jal
+	    
       default: imm = 32'b0;
     endcase
   end
 endmodule
-

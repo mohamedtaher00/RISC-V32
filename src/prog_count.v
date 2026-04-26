@@ -3,7 +3,7 @@
 // I need a counter that count just up and always counting (till now, but I'll add a en signal for the future (stalls)  
 
 
-module prog_count #(parameter INST_MEMORY_SIZE = 1024, 
+module prog_count #(parameter INST_MEMORY_SIZE = 16384, 
 
 	parameter ADDR_WIDTH = $clog2(INST_MEMORY_SIZE)
 )
@@ -27,7 +27,7 @@ module prog_count #(parameter INST_MEMORY_SIZE = 1024,
         wire [31:0] prog_counter_next_addr_tb ;
         wire [63:0] prog_counter_64_bit_addr_tb ; 
 
-	assign addr_2_IF_ID_pipeline_reg = {{54{1'b0}}, {addr_2_INST_MEM}} ; 
+	assign addr_2_IF_ID_pipeline_reg = {{50{1'b0}}, {addr_2_INST_MEM}} ; 
 	// current state logic
 	always @(posedge clk) begin 
 		if (~reset_n) begin 

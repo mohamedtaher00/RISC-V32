@@ -24,7 +24,7 @@ module hazard_detection_unit (
 
 	always @(*) begin 
 		stall_cnt = 1'b0 ; 
-		if (boot_cnt <= 1'b01) 
+		if (boot_cnt <= 2'b01) 
 			stall_cnt = 1'b0 ; 
 		else if ((~we_were_wrong_EX_MEM) && (ID_EX_MemRead) && ((ID_EX_RegisterRd[4:0] == IF_ID_Rs1[4:0]) || (ID_EX_RegisterRd[4:0] == IF_ID_Rs2[4:0]) )) 
 			stall_cnt = 1'b1 ; 
