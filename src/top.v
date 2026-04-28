@@ -445,7 +445,7 @@ module top (
 	  	
 	//next state logic 
 	assign rd_ex = id_ex [182:178] ;
-	assign write_data_ex = id_ex[135:104] ;
+	assign write_data_ex = alu_muxB_src ;
 	assign ctrl_signals_ex = id_ex [4:0] ;
 	assign return_addr_ex = id_ex [250:187] ; 
 	assign previous_prediction_addr_ex_mem = id_ex [257:253] ;
