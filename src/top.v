@@ -236,18 +236,24 @@ module top (
 	wire regwrite_ctrl_wb    ;
 
 	wire [31:0] write_back_data ;
+	
+	
 
   // IF stage 
 	// next_addr_mux ; we may have stall, not valid pipeline, a branch, a correction of a branch 	
 	always @(*) begin 
-		if (!pipeline_valid) 
+		if (!pipeline_valid) begin  
 			pc_nxt_addr_if = inst_addr_plus4_if ;
-	        else if (ex_mem [139] & ex_mem[4]) // ex_mem [139]: branch_mispredicted_mem, ex_mem[4]: branch
-			pc_nxt_addr_if = ex_mem[68:5]  ; //  ex_mem[68:5]: return addr 
-		else if (our_prediction[1] & branch_ctrl_id) 
-			pc_nxt_addr_if = branch_target_addr_id ; 
-		else 
-			pc_nxt_addr_if = inst_addr_plus4_if ; 	
+		end 
+		else if (ex_mem [139] & ex_mem[4])begin  // ex_mem [139]: branch_mispredicted_mem, ex_mem[4]: branch
+			pc_nxt_addr_if = ex_mem[68:5]  ; //  ex_mem[68:5]: return addr
+		end 
+		else if (our_prediction[1] & branch_ctrl_id & ~(mem_wb[71])) begin // [71] means branch in mem_wb was mispredicted 
+			pc_nxt_addr_if = branch_target_addr_id ;
+		end 
+		else begin 
+			pc_nxt_addr_if = inst_addr_plus4_if ; 
+		end 
 	end 	
 	
 	
