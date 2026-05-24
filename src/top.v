@@ -41,7 +41,7 @@
 //   [33:2]  = readed_data_mem ; 
 //   [65:34] = alu_result_mem ; 
 //   [70:66] = rd_mem		;
-//   [71]    = we_were_wrong_wb ; 
+//   [71]    = branch_mispredicted_mem ; 
 //   [72]    = branch_mem 	; 
 //   [77:73] = previous_prediction_addr_mem
 //   [80:78] = ex_mem [148:146] // funct3 field (to handle/mask loaded data from data_mem for loads) 
@@ -231,7 +231,7 @@ module top (
 	wire [31:0] loaded_data ; 
 	wire [2:0] funct3_mem ; 	
 	
-	wire we_were_wrong_wb 	; 
+	wire branch_mispredicted_mem 	; 
 
 	wire regwrite_ctrl_wb    ;
 
@@ -569,7 +569,7 @@ module top (
 	assign ctrl_signals_mem = ex_mem [1:0]; 
 	assign alu_result_mem = ex_mem [101:70] ; 
 	assign rd_mem = ex_mem [138:134] ; 
-	assign we_were_wrong_wb = ex_mem [139] ; 
+	assign branch_mispredicted_mem = ex_mem [139] ; 
 	assign branch_mem = ex_mem[4] ;
 	assign previous_prediction_addr_mem [4:0] = ex_mem[144:140]	;
 	assign funct3_mem = ex_mem[148:146] ; 	
@@ -580,7 +580,7 @@ module top (
 		mem_wb_current_state [1:0]   <= ctrl_signals_mem ;	
 		mem_wb_current_state [33:2] <= alu_result_mem ; 
 		mem_wb_current_state [38:34] <= rd_mem		;
-		mem_wb_current_state [39]    <= we_were_wrong_wb ; 
+		mem_wb_current_state [39]    <= branch_mispredicted_mem ; 
 		mem_wb_current_state [40]    <= branch_mem 	; 
 		mem_wb_current_state [45:41] <= previous_prediction_addr_mem[4:0] ;
 	        mem_wb_current_state [48:46] <= funct3_mem ; 	
