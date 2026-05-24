@@ -30,7 +30,7 @@
 //   [101:70]    = alu_result_ex 
 //   [133:102]   = write_data_ex   
 //   [138:134]   = rd_ex 	   
-//   [139]	   = branch_mispredicted_mem  
+//   [139]	   = branch_mispredicted_ex  
 //   [144:140]   = previous_prediction_addr_ex_mem 
 //   [145]	   = final_verdict
 //   [148:146]   = id_ex[185:183] // funct3 field  
@@ -214,7 +214,7 @@ module top (
 	wire branch_mem ; 
 	wire [4:0] rd_mem			; 
 	wire [31:0] alu_result_mem; 
-	wire branch_mispredicted_mem 	; 
+	wire branch_mispredicted_ex 	; 
 	wire [4:0] previous_prediction_addr_mem ; 
 	
 	wire sel_imem_mem ;	 
@@ -245,7 +245,7 @@ module top (
 		if (!pipeline_valid) begin  
 			pc_nxt_addr_if = inst_addr_plus4_if ;
 		end 
-		else if (ex_mem [139] & ex_mem[4])begin  // ex_mem [139]: branch_mispredicted_mem, ex_mem[4]: branch
+		else if (ex_mem [139] & ex_mem[4])begin  // ex_mem [139]: branch_mispredicted_ex, ex_mem[4]: branch
 			pc_nxt_addr_if = ex_mem[68:5]  ; //  ex_mem[68:5]: return addr
 		end 
 		else if (our_prediction[1] & branch_ctrl_id & ~(mem_wb[71])) begin // [71] means branch in mem_wb was mispredicted 
@@ -453,7 +453,7 @@ module top (
 
 	always @(posedge clk) begin 
 		//current_state logic
-		//EX_MEM_pipeline_reg[139] is branch_mispredicted_mem, and mem_wb[71] also. ex_mem[4] and mem_wb[72] are branch
+		//EX_MEM_pipeline_reg[139] is branch_mispredicted_ex, and mem_wb[71] also. ex_mem[4] and mem_wb[72] are branch
 		if ((ex_mem[139] & ex_mem[4] ) | (mem_wb[71] & mem_wb[72] ) )  
 			ex_mem_current_state [4:0] <= 5'b00000 ;
 		else 
@@ -465,7 +465,7 @@ module top (
 		ex_mem_current_state [101:70]    <= alu_result_ex 	     ;
 		ex_mem_current_state [133:102]   <= write_data_ex     ;
 		ex_mem_current_state [138:134]   <= rd_ex 	     ;
-		ex_mem_current_state [139]	   <= branch_mispredicted_mem  ;
+		ex_mem_current_state [139]	   <= branch_mispredicted_ex  ;
 		ex_mem_current_state [144:140]   <= previous_prediction_addr_ex_mem ;
 		ex_mem_current_state [145]	   <= final_verdict ;  
 		funct3_ex_current <= funct3_ex 	; 
@@ -506,7 +506,7 @@ module top (
   
 	
 	and (final_verdict, zero_flag , id_ex[4]); 
-	assign branch_mispredicted_mem =  id_ex[4] & (final_verdict ^ id_ex[252] ) ;
+	assign branch_mispredicted_ex =  id_ex[4] & (final_verdict ^ id_ex[252] ) ;
   
 	// forwarding unit
 	 
