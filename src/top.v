@@ -204,6 +204,7 @@ module top (
 	wire [1:0] forwardA, forwardB ;
 	wire [4:0] previous_prediction_addr_ex_mem ;
 	
+    wire branch_taken ; 
 	
 	// MEM stage intermediate signals 
 	wire [80:0] mem_wb ; //32(read data) + 32(alu_result_mem) + 2(WB control signals) + Rd = 71 
@@ -505,8 +506,14 @@ module top (
 	); 
   
 	
-	and (final_verdict, zero_flag , id_ex[4]); 
-	assign branch_mispredicted_ex =  id_ex[4] & (final_verdict ^ id_ex[252] ) ;
+    branch_condition bran_cond(
+     .funct3(id_ex[185:183]),          // id_ex[183:185] is funct3 field 
+     .zero(zero_flag),
+     .alu_result_0(alu_result_ex[0]),  
+                      
+     .branch_taken(branch_taken)
+    ); 
+	assign branch_mispredicted_ex =  id_ex[4] & (branch_taken ^ id_ex[252] ) ;
   
 	// forwarding unit
 	 
