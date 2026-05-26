@@ -68,7 +68,7 @@ module top_tb ;
     reset_n_tb = 0 ;
     #10 reset_n_tb = 1 ;
     
-    #1200 ;
+    #2200 ;
     $display("=== RESULTS: %0d PASSED, %0d FAILED ===", pass_count, fail_count);
     $finish ;
   end
@@ -198,25 +198,31 @@ always @(posedge clk_tb) begin
             // PHASE 10— ALU corners  (x28, x29, x30, x28 again)
             //
             // x28 write sequence across phases 4-10:
-            //   1:  ph4 chain final   = 0x00000005
-            //   2:  ph5 lw verify     = 0x00000042
-            //   3:  ph6 flush check   = 0x00000042  (unchanged — flush must prevent write)
-            //       NOTE: if flush works, x28 is NOT written in ph6 flush slot,
-            //             so write #3 is ph7 lw x28,0(x10)
-            //   3:  ph7 lw            = 0x00000DA0
-            //   4:  ph8 addi x28,x0,7 = 0x00000007
-            //   5:  ph9 slli x28,x1,0 = 0xFFFFFFFF
-            //   6:  ph10 add           = 0x0000007E
-            //   7:  ph10 or            = 0xFFFFFFFF
+            //   ph4 chain: x28 written 5 times (1,2,3,4,5) — check each value
+            //   1:  ph4 addi x28,x0,1        = 0x00000001
+            //   2:  ph4 addi x28,x28,1       = 0x00000002
+            //   3:  ph4 addi x28,x28,1       = 0x00000003
+            //   4:  ph4 addi x28,x28,1       = 0x00000004
+            //   5:  ph4 addi x28,x28,1       = 0x00000005
+            //   6:  ph5 lw   x28,8(x10)      = 0x00000042
+            //   7:  ph7 lw   x28,0(x10)      = 0x00000DA0
+            //   8:  ph8 addi x28,x0,7        = 0x00000007
+            //   9:  ph9 slli x28,x1,0        = 0xFFFFFFFF
+            //  10:  ph10 add x28,x1,x17      = 0x0000007E
+            //  11:  ph10 or  x28,x0,x1       = 0xFFFFFFFF
             // ------------------------------------------------------------------
             5'd28: case (wb_count[28])
-                1: check_wb(28, write_back_data_test_tb, 32'h00000005, "ph4 fwd chain x28=5");
-                2: check_wb(28, write_back_data_test_tb, 32'h00000042, "ph5 lw verify x28=0x42");
-                3: check_wb(28, write_back_data_test_tb, 32'h00000DA0, "ph7 lw x28,0(x10)");
-                4: check_wb(28, write_back_data_test_tb, 32'h00000007, "ph8 addi x28,x0,7");
-                5: check_wb(28, write_back_data_test_tb, 32'hFFFFFFFF, "ph9 slli x28,x1,0");
-                6: check_wb(28, write_back_data_test_tb, 32'h0000007E, "ph10 add x28 wrap");
-                7: check_wb(28, write_back_data_test_tb, 32'hFFFFFFFF, "ph10 or  x28,x0,x1");
+                1: check_wb(28, write_back_data_test_tb, 32'h00000001, "ph4 chain x28=1");
+                2: check_wb(28, write_back_data_test_tb, 32'h00000002, "ph4 chain x28=2");
+                3: check_wb(28, write_back_data_test_tb, 32'h00000003, "ph4 chain x28=3");
+                4: check_wb(28, write_back_data_test_tb, 32'h00000004, "ph4 chain x28=4");
+                5: check_wb(28, write_back_data_test_tb, 32'h00000005, "ph4 chain x28=5");
+                6: check_wb(28, write_back_data_test_tb, 32'h00000042, "ph5 lw verify x28=0x42");
+                7: check_wb(28, write_back_data_test_tb, 32'h00000DA0, "ph7 lw x28,0(x10)");
+                8: check_wb(28, write_back_data_test_tb, 32'h00000007, "ph8 addi x28,x0,7");
+                9: check_wb(28, write_back_data_test_tb, 32'hFFFFFFFF, "ph9 slli x28,x1,0");
+               10: check_wb(28, write_back_data_test_tb, 32'h0000007E, "ph10 add x28 wrap");
+               11: check_wb(28, write_back_data_test_tb, 32'hFFFFFFFF, "ph10 or  x28,x0,x1");
                 default: ;
             endcase
 
