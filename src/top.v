@@ -23,7 +23,7 @@
 //   [257:253] = id_ex_previous_prediction_addr_current
 //
 //
-// ex_mem [148:0] :  
+// ex_mem [153:0] :  
 //   [4:0] = ctrl_signals_ex 
 //   [68:5]     = return_addr_ex
 //   [69]	   = zero_flag 	      
@@ -34,6 +34,7 @@
 //   [144:140]   = previous_prediction_addr_ex_mem 
 //   [145]	   = final_verdict
 //   [148:146]   = id_ex[185:183] // funct3 field  
+//   [153:149]   = id_ex[177:173] // rs2_ex
 //
 //
 // mem_wb [80:0] :
@@ -176,7 +177,7 @@ module top (
 
 
 	// EX stage intermediate signals 
-	wire [148:0] ex_mem ; //64(calculated address) + 32(alu_o/p) + 1(zero_flag) + 5(destination_reg) + 32(store data if sw) + 5 (rest of ctrl_unit)
+	wire [153:0] ex_mem ; //64(calculated address) + 32(alu_o/p) + 1(zero_flag) + 5(destination_reg) + 32(store data if sw) + 5 (rest of ctrl_unit)
 	
 	
 	// Alu/data path interface
@@ -198,7 +199,8 @@ module top (
 	wire [4:0] ctrl_signals_ex ;
 	wire [31:0] write_data_ex ; 
 	wire [4:0] rd_ex ; 	
-	reg [145:0] ex_mem_current_state ;  
+    wire [4:0] rs2_ex ; 
+	reg [150:0] ex_mem_current_state ;  
 	wire [63:0] return_addr_ex ;
 	 
 	wire [1:0] forwardA, forwardB ;
@@ -208,7 +210,7 @@ module top (
 	
 	// MEM stage intermediate signals 
 	wire [80:0] mem_wb ; //32(read data) + 32(alu_result_mem) + 2(WB control signals) + Rd = 71 
-	
+    wire [31:0] write_data_mem ; 	
 	wire [31:0] readed_data_mem ; 
 	wire [31:0] readed_data_mem_mem 	;
 	wire [1:0]  ctrl_signals_mem	;
@@ -446,6 +448,7 @@ module top (
 	  	
 	//next state logic 
 	assign rd_ex = id_ex [182:178] ;
+    assign rs2_ex = id_ex [177:173]; 
 	assign write_data_ex = alu_muxB_src ;
 	assign ctrl_signals_ex = id_ex [4:0] ;
 	assign return_addr_ex = id_ex [250:187] ; 
@@ -469,10 +472,12 @@ module top (
 		ex_mem_current_state [139]	   <= branch_mispredicted_ex  ;
 		ex_mem_current_state [144:140]   <= previous_prediction_addr_ex_mem ;
 		ex_mem_current_state [145]	   <= final_verdict ;  
+        ex_mem_current_state [150:146] <= rs2_ex ; 
 		funct3_ex_current <= funct3_ex 	; 
 	end
        // output logic 
 	assign ex_mem = {
+        ex_mem_current_state [150:146], 
 		funct3_ex_current, 
 		ex_mem_current_state [145] , 
 		ex_mem_current_state [144:140] , 
@@ -590,7 +595,7 @@ module top (
 		mem_wb_current_state [39]    <= branch_mispredicted_mem ; 
 		mem_wb_current_state [40]    <= branch_mem 	; 
 		mem_wb_current_state [45:41] <= previous_prediction_addr_mem[4:0] ;
-	        mem_wb_current_state [48:46] <= funct3_mem ; 	
+	    mem_wb_current_state [48:46] <= funct3_mem ; 	
 	end 
 
 //	data_mem # (.MEMORY_SIZE(12288)) Data_MEM(
@@ -601,11 +606,12 @@ module top (
 //	.w_data_MEM(ex_mem [133:102]),
 //	.data(readed_data_mem_mem) 
 //	);
-
+    
+    assign write_data_mem = (ex_mem[153:149] == mem_wb[70:66]) ? mem_wb[33:2] : ex_mem[133:102] ; 
 	data_mem_wrapper data_mem_ (
 	.clk		(clk),
 	.data_addr	(alu_result_mem[13:0]), 
-	.w_data_MEM	(ex_mem[133:102]), 
+	.w_data_MEM	(write_data_mem), 
 	.mem_wren	(ex_mem[2] & sel_dmem_mem), 
 	.funct3		(ex_mem[148:146]), 
 	.data		(readed_data_mem_mem) 
