@@ -449,7 +449,7 @@ module top (
 	//next state logic 
 	assign rd_ex = id_ex [182:178] ;
     assign rs2_ex = id_ex [177:173]; 
-	assign write_data_ex = alu_muxB_src ;
+	assign write_data_ex = ((mem_wb[70:66] == id_ex[177:173]) & ~ex_mem[1]) ? mem_wb[33:2] : alu_muxB_src ;
 	assign ctrl_signals_ex = id_ex [4:0] ;
 	assign return_addr_ex = id_ex [250:187] ; 
 	assign previous_prediction_addr_ex_mem = id_ex [257:253] ;
@@ -607,7 +607,8 @@ module top (
 //	.data(readed_data_mem_mem) 
 //	);
     
-    assign write_data_mem = (ex_mem[153:149] == mem_wb[70:66]) ? mem_wb[33:2] : ex_mem[133:102] ; 
+    assign write_data_mem = ((ex_mem[153:149] == mem_wb[70:66]) & mem_wb[1]) ? mem_wb[65:34] : ex_mem[133:102] ; // ex_mem[153:149] is rs2 
+                                                                                                                // mem_wb[70:66] is rd  
 	data_mem_wrapper data_mem_ (
 	.clk		(clk),
 	.data_addr	(alu_result_mem[13:0]), 
