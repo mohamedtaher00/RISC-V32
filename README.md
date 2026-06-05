@@ -1,5 +1,6 @@
 
 
+
 # RV32I Pipelined Processor with UART Interface
 
 > **Branch:** `interfacing` — UART peripheral integration on top of the 5-stage pipeline core. Will be merged to `main` on project completion.
