@@ -43,7 +43,7 @@ All inter-stage state is packed into wide bus vectors and documented at the top 
 |----------|-------|----------|
 | `if_id`  | 103 b | PC, instruction, BHT prediction, low PC bits |
 | `id_ex`  | 258 b | Control signals, PC, rs1/rs2 data, imm, register addresses, ALU ctrl, return addr, prediction |
-| `ex_mem` | 149 b | Control signals, return addr, zero flag, ALU result, store data, rd, branch mispredict, funct3 |
+| `ex_mem` | 154 b | Control signals, return addr, zero flag, ALU result, store data, rd, branch mispredict, prev_predition_addr, final_verdict, funct3, rs2 |
 | `mem_wb` | 81 b  | Control signals, read data, ALU result, rd, mispredict flag, branch, funct3 |
 
 ---
