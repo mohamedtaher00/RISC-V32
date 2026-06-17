@@ -101,9 +101,9 @@ module top (
 	wire [102:0] if_id ; 
 	reg [63:0] inst_addr_if ;
 
-	wire [63:0] inst_addr_plus4_if ;//branch mux
+	wire [63:0] inst_addr_plus4_if ;
 	
-	wire [31:0] instruction ; //instruction_mem/data path interface
+	wire [31:0] instruction ; 
 	
 	wire [63:0] pc_64_addr_if ; 	
 	reg [63:0] pc_nxt_addr_if ; 
@@ -113,7 +113,7 @@ module top (
 	
 	
 	// ID stage intermediate signals 
-	wire [260:0] id_ex ; // 32(register1)+ 32(register2)+ 32(imm) +64(PC) +15(addresses of two sources and dest)+ 4(alu_ctrl)+ 8(ctrl lines)
+	wire [260:0] id_ex ; 
 	
 	
 	// control_unit/data path interface
@@ -170,7 +170,7 @@ module top (
 
 
 	// EX stage intermediate signals 
-	wire [153:0] ex_mem ; //64(calculated address) + 32(alu_o/p) + 1(zero_flag) + 5(destination_reg) + 32(store data if sw) + 5 (rest of ctrl_unit)
+	wire [153:0] ex_mem ; 
 	
 	
 	// Alu/data path interface
@@ -202,7 +202,7 @@ module top (
     wire branch_taken ; 
 	
 	// MEM stage intermediate signals 
-	wire [80:0] mem_wb ; //32(read data) + 32(alu_result_mem) + 2(WB control signals) + Rd = 71 
+	wire [80:0] mem_wb ; 
     wire [31:0] write_data_mem ; 	
 	wire [31:0] readed_data_mem ; 
 	wire [31:0] readed_data_mem_mem 	;
@@ -274,10 +274,10 @@ module top (
 	
 	// instr_mem_wrapper 
 	instr_mem_wrapper inst_mem(
-	        .clk			(clk),
-	        .read_addr 		(pc_addr_if), 
+	    .clk			(clk),
+	    .read_addr 		(pc_addr_if), 
 		.readed_data		(instruction),
-		.write_addr		(ex_mem[83:70]),// it was ex_mem[101:70]
+		.write_addr		(ex_mem[83:70]),
 		.write_data		(ex_mem[133:102]), 
 		.w_en			(sel_imem_mem & ex_mem[2]),
 		.stall			(stall_cnt) 
@@ -293,7 +293,7 @@ module top (
 
 	always @(posedge clk) begin 
 		if(!stall_cnt) begin 	
-	         inst_addr_if <= pc_64_addr_if;// this part is needed to be clocked, the reg_file o/p is already clocked
+	     inst_addr_if <= pc_64_addr_if;// this part is needed to be clocked, the reg_file o/p is already clocked
 		 pc_addr_low_bits <= pc_addr_if[4:0] ;
 		end 
 		else begin  
@@ -305,7 +305,7 @@ module top (
 		.reset_n(reset_n), 
 		.clk(clk), 
 		.addr_needs_predition(pc_addr_if[4:0]), //low order bits from the pc 
-		.previous_prediction_addr_ID_EX(id_ex [257:253]) ,//from ID/EX
+		.previous_prediction_addr_ID_EX(id_ex [257:253]) ,
 	    .previous_prediction_addr_MEM_WB(mem_wb[77:73]), 
 		.branch_EX_MEM(ex_mem[4]), 
 		.branch_MEM_WB(mem_wb[72]) , 
