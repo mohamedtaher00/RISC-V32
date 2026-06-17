@@ -113,7 +113,7 @@ module top (
 	
 	
 	// ID stage intermediate signals 
-	wire [260:0] id_ex ; 
+	wire [257:0] id_ex ; 
 	
 	
 	// control_unit/data path interface
