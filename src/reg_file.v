@@ -17,38 +17,30 @@ module reg_file
 	end 
 	localparam DEPTH = 2**ADDR_WIDTH ;
 	(* ramstyle = "M9K" *) reg [WIDTH-1:0] mem [0:DEPTH-1] ;
-	//reg [WIDTH-1:0] mem [0:DEPTH-1] ;
-	//write logic - sync write and read logic sync  
-//	always @(posedge clk) begin //write before read
-//		if (we) begin  
-//			mem[w_addr] <= w_data_reg_file;
-//		end 
-//	       		read_reg1 <= mem[r_addr1] ;
-//		 	read_reg2 <= mem[r_addr2] ; 
-//	end
-	// This is a write before read reg_file
+
+	// write before read reg_file
 	always @(posedge clk) begin 
-		if (we) begin 
+		if (we && (w_addr != 5'd0) ) begin 
 			if (w_addr == r_addr1) begin  
 				read_reg1 <= w_data_reg_file ;
-		       		read_reg2 <= mem[r_addr2] ;
-			        mem[w_addr] <= w_data_reg_file ; 	
+		        read_reg2 <= mem[r_addr2] ;
+			    mem[w_addr] <= w_data_reg_file ; 	
 			end 	
 			else if (w_addr == r_addr2) begin  
 				read_reg2 <= w_data_reg_file ;
-		       		read_reg1 <= mem[r_addr1] ;
+		        read_reg1 <= mem[r_addr1] ;
 				mem[w_addr] <= w_data_reg_file ; 
 			end 	
 			else begin 
 				mem[w_addr] <= w_data_reg_file ; 	
 				read_reg1 <= mem[r_addr1] ; 	
-	 	                read_reg2 <= mem[r_addr2] ;
+	 	        read_reg2 <= mem[r_addr2] ;
 			end
 		end 
 		
 		else begin 
 			read_reg1 <= mem[r_addr1] ;	
-                        read_reg2 <= mem[r_addr2] ;
+            read_reg2 <= mem[r_addr2] ;
 		end
 	end 	
 
