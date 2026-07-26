@@ -4,15 +4,13 @@
 # RV32I Pipelined Processor with UART Interface
 
 
----
 
 ## Overview
 
-A 5-stage pipelined RV32I processor implemented in Verilog, targeting the **Cyclone IV FPGA** (Intel/Altera). The `interfacing` branch extends the base pipeline with a memory-mapped UART peripheral, an address decoder, and byte/halfword load masking — enabling the processor to communicate over serial.
+A 5-stage pipelined RV32I processor implemented in Verilog, targeting the **Cyclone IV FPGA** (Intel/Altera), featuring a memory-mapped UART peripheral, an address decoder, and byte/halfword load masking — enabling the processor to communicate over serial.
 
 The design achieves **112.6 MHz** on Cyclone IV with a 20 ns clock period constraint (`top.sdc`).
 
----
 
 ## Architecture
 
