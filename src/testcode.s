@@ -1,130 +1,9 @@
-## =========================================================================
-## RISC-V 32-bit Pipelined Core Verification Test
-## Supported ISA subset: add, sub, and, or, lw, lb, lh, lbu, lhu, 
-##                       addi, slli, xori, srli, srai, ori, andi, sw, sb, sh, beq
-## =========================================================================
-#.option push
-#.option nocompress
-#.text
-#.globl _start
-#_start:
-## =========================================================================
-## RISC-V 32-bit Pipelined Core Verification Test
-## Memory Map:
-##   0x00000000 : Instruction Memory Base
-##   0x00004000 : Data Memory Base
-## Supported ISA: add, sub, and, or, lw, lb, lh, lbu, lhu, 
-##                addi, slli, xori, srli, srai, ori, andi, sw, sb, sh, beq
-## =========================================================================
-#
-#    # 0. Initialize Base Address for Data Memory (0x4000)
-#    # Constructing 0x4000 using addi + slli to stay within the strict subset
-#    addi x10, x0, 1         # x10 = 1
-#    slli x10, x10, 14       # x10 = 0x00004000 (Points directly to Data Memory)
-#
-#    # =====================================================================
-#    # PHASE 1: R-Type / I-Type Data Hazards & Forwarding
-#    # =====================================================================
-#    
-#    # 1a. Test Immediate Logic & EX-to-EX Forwarding
-#    addi x1, x0, -1         # x1 = 0xFFFFFFFF 
-#    ori  x2, x0, 0x0F0      # x2 = 0x000000F0
-#    andi x3, x2, 0x0FF      # x3 = 0x000000F0 (Trigger: EX-to-EX forward from x2)
-#    xori x4, x3, 0x0AA      # x4 = 0x0000005A (Trigger: EX-to-EX forward from x3)
-#
-#    # 1b. Test MEM-to-EX Forwarding & Standard ALU
-#    add  x5, x2, x3         # x5 = 0x000001E0 (Trigger: MEM-to-EX for x2, EX-to-EX for x3)
-#    sub  x6, x5, x4         # x6 = 0x00000186 (Trigger: EX-to-EX for x5, MEM-to-EX for x4)
-#    and  x7, x6, x2         # x7 = 0x00000080 (Trigger: EX-to-EX for x6)
-#    or   x8, x7, x4         # x8 = 0x000000DA (Trigger: EX-to-EX for x7)
-#
-#    # 1c. Test Shifts (Logical and Arithmetic)
-#    slli x9, x8, 4          # x9 = 0x00000DA0 (Logical shift left)
-#    srli x11, x9, 2         # x11 = 0x00000368 (Logical shift right)
-#    
-#    # Setup for arithmetic shift right (requires MSB = 1 to test sign extension)
-#    addi x12, x0, 1         # x12 = 1
-#    slli x12, x12, 31       # x12 = 0x80000000 (Shift into MSB)
-#    ori  x12, x12, 0x0A0    # x12 = 0x800000A0
-#    srai x13, x12, 4        # x13 = 0xF800000A (Arithmetic shift right, MSB extended)
-#
-#    # =====================================================================
-#    # PHASE 2: Load/Store & Load-Use Stalls (Targeting Data Memory)
-#    # =====================================================================
-#    
-#    # 2a. Word Store/Load and the Load-Use Hazard
-#    sw   x9, 0(x10)         # DataMem[0x4000] = 0x00000DA0
-#    lw   x14, 0(x10)        # x14 = 0x00000DA0 
-#   
-#    # i think this may fail
-#    # lw x14, 0(x10) 
-#    # sw x12, 0(x14) 
-# 
-#    # >> PIPELINE STALL EXPECTED HERE <<
-#    # Hazard unit must NOP 1 cycle while x14 fetches from Data Memory
-#    add  x15, x14, x0       # x15 = 0x00000DA0 
-#
-#    # 2b. Sub-word Store/Load (Sign & Zero Extension Verification)
-#    addi x16, x0, -1        # x16 = 0xFFFFFFFF
-#    addi x17, x0, 0x7F      # x17 = 0x0000007F (127)
-#    addi x18, x0, 0x80      # x18 = 0x00000080 (128)
-#    
-#    # Store layout (Little Endian):
-#    sh   x16, 4(x10)        # DataMem[0x4004] = 0xFF, DataMem[0x4005] = 0xFF
-#    sb   x17, 6(x10)        # DataMem[0x4006] = 0x7F
-#    sb   x18, 7(x10)        # DataMem[0x4007] = 0x80
-#
-#    # Load and extend
-#    lh   x19, 4(x10)        # x19 = 0xFFFFFFFF (Sign extended 0xFFFF)
-#    lhu  x20, 4(x10)        # x20 = 0x0000FFFF (Zero extended 0xFFFF)
-#    lb   x21, 7(x10)        # x21 = 0xFFFFFF80 (Sign extended 0x80)
-#    lbu  x22, 7(x10)        # x22 = 0x00000080 (Zero extended 0x80)
-#
-#    # =====================================================================
-#    # PHASE 3: Control Hazards (Branches & Flushing)
-#    # =====================================================================
-#    
-#    # 3a. Taken Branch Test
-#    addi x23, x0, 5         # x23 = 5
-#    addi x24, x0, 5         # x24 = 5
-#    beq  x23, x24, branch_taken # EX-to-EX/ID forwarding to branch comparator
-#    
-#    # >> PIPELINE FLUSH EXPECTED HERE <<
-#    addi x25, x0, -1        # SHOULD FLUSH
-#    sw   x25, 20(x10)       # SHOULD FLUSH (Verify DataMem[0x4014] remains untouched)
-#
-#branch_taken:
-#    # 3b. Not-Taken Branch Test
-#    addi x26, x0, 1         # x26 = 1
-#    beq  x23, x26, end_fail # 5 != 1, branch NOT taken. Should fall through.
-#    
-#    # Safe landing (Verify this executes)
-#    addi x27, x0, 0x99      # x27 = 0x00000099
-#
-#end_pass:
-#    # Infinite loop to signal successful completion
-#    beq x0, x0, end_pass
-#
-#end_fail:
-#    # Trap for failed branches
-#    addi x31, x0, -1        # x31 = 0xFFFFFFFF (Indicates failure state)
-#    beq x0, x0, end_fail
-#.option pop
-
-
-
-
-
-
-
-
-
 #-----------new_by_claude------------
 # =========================================================================
 # RISC-V 32-bit Pipelined Core Verification Test  — Extended
 # Supported ISA subset: add, sub, and, or, lw, lb, lh, lbu, lhu,
 #                       addi, slli, xori, srli, srai, ori, andi,
-#                       sw, sb, sh, beq, bne
+#                       sw, sb, sh, beq, bne, jal, jalr
 # Memory Map:
 #   0x00000000 : Instruction Memory Base
 #   0x00004000 : Data Memory Base
@@ -281,6 +160,66 @@ p8_bne_taken:
     sub  x29, x0, x17          # x29 = 0x00000000 - 0x7F = 0xFFFFFF81  (negate)
     and  x30, x1, x0           # x30 = 0xFFFFFFFF & 0x00000000 = 0x00000000
     or   x28, x0, x1           # x28 = 0x00000000 | 0xFFFFFFFF = 0xFFFFFFFF
+
+    # =====================================================================
+    # PHASE 11: JAL / JALR
+    #
+    # Commit table (all PCs computed from _start):
+    #
+    #   PC         Instr                    Commits?  rd   Expected
+    #   0x00000108 jal  x1, p11_t1          YES       x1   0x0000010C
+    #   0x0000010C addi x2, x0, -1          FLUSH     —    —
+    #   0x00000110 addi x3, x0, 0x11        YES       x3   0x00000011
+    #   0x00000114 jal  x0, p11_t2          YES       x0   — (no write)
+    #   0x00000118 addi x4, x0, -1          FLUSH     —    —
+    #   0x0000011C addi x5, x0, 0x22        YES       x5   0x00000022
+    #   0x00000120 jalr x6, x1, 32          YES       x6   0x00000124
+    #   0x00000124 addi x7, x0, -1          FLUSH     —    —
+    #   0x00000128 addi x8, x0, -1          FLUSH     —    —
+    #   0x0000012C addi x3, x0, 0x44        YES       x3   0x00000044
+    #   0x00000130 addi x2, x0, 0x140       YES       x2   0x00000140
+    #   0x00000134 jalr x7, x2, 0           YES       x7   0x00000138
+    #   0x00000138 addi x8, x0, -1          FLUSH     —    —
+    #   0x0000013C addi x5, x0, -1          FLUSH     —    —
+    #   0x00000140 addi x3, x0, 0x55        YES       x3   0x00000055
+    # =====================================================================
+
+    # --- Scenario A: JAL basic, rd=x1 ---
+    # JAL resolves in ID -> flush depth = 1
+    jal  x1, p11_t1            # 0x108: x1=0x10C, jump to 0x110
+    addi x2, x0, -1            # 0x10C: MUST FLUSH
+
+p11_t1:
+    addi x3, x0, 0x11          # 0x110: x3=0x11  (JAL target)
+
+    # --- Scenario B: JAL rd=x0, return address discarded ---
+    jal  x0, p11_t2            # 0x114: x0 not written, jump to 0x11C
+    addi x4, x0, -1            # 0x118: MUST FLUSH
+
+p11_t2:
+    addi x5, x0, 0x22          # 0x11C: x5=0x22  (JAL rd=x0 target)
+
+    # --- Scenario C: JALR with clean rs1 ---
+    # x1 = 0x10C (from scenario A)
+    # target = (0x10C + 32) & ~1 = 0x12C
+    # JALR resolves in EX -> flush depth = 2
+    jalr x6, x1, 32            # 0x120: x6=0x124, jump to 0x12C
+    addi x7, x0, -1            # 0x124: MUST FLUSH (depth 2, cycle 1)
+    addi x8, x0, -1            # 0x128: MUST FLUSH (depth 2, cycle 2)
+
+p11_t3:
+    addi x3, x0, 0x44          # 0x12C: x3=0x44  (JALR target)
+
+    # --- Scenario D: JALR with forwarded rs1 ---
+    # addi x2 immediately before jalr -> rs1=x2 must be forwarded (EX-to-EX)
+    # target = (0x140 + 0) & ~1 = 0x140
+    addi x2, x0, 0x140         # 0x130: x2=0x140
+    jalr x7, x2, 0             # 0x134: x7=0x138, jump to 0x140 (rs1 forwarded)
+    addi x8, x0, -1            # 0x138: MUST FLUSH (depth 2, cycle 1)
+    addi x5, x0, -1            # 0x13C: MUST FLUSH (depth 2, cycle 2)
+
+p11_t4:
+    addi x3, x0, 0x55          # 0x140: x3=0x55  (JALR fwd target)
 
 end_pass:
     beq  x0, x0, end_pass      # infinite loop — successful completion
