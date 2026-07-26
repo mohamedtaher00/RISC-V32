@@ -3,7 +3,6 @@
 
 # RV32I Pipelined Processor with UART Interface
 
-> **Branch:** `interfacing` — UART peripheral integration on top of the 5-stage pipeline core. Will be merged to `main` on project completion.
 
 ---
 
@@ -19,10 +18,10 @@ The design achieves **112.6 MHz** on Cyclone IV with a 20 ns clock period constr
 
 ```
          ┌──────┐   ┌──────┐   ┌──────┐   ┌──────┐   ┌──────┐
-clk ────►│  IF  │──►│  ID  │──►│  EX  │──►│ MEM  │──►│  WB  │
+PC  ────►│  IF  │──►│  ID  │──►│  EX  │──►│ MEM  │──►│  WB  │
          └──────┘   └──────┘   └──────┘   └──────┘   └──────┘
            BHT       RegFile     ALU      Addr Dec    MaskLoad
-           PC        ImmGen      FwdUnit  DataMem      WBmux
+                     ImmGen      FwdUnit  DataMem      WBmux
            IMEM      CtrlUnit    HazDet   UART
 ```
 
@@ -43,8 +42,8 @@ All inter-stage state is packed into wide bus vectors and documented at the top 
 | Register | Width | Contents |
 |----------|-------|----------|
 | `if_id`  | 103 b | PC, instruction, BHT prediction, low PC bits |
-| `id_ex`  | 258 b | Control signals, PC, rs1/rs2 data, imm, register addresses, ALU ctrl, return addr, prediction |
-| `ex_mem` | 154 b | Control signals, return addr, zero flag, ALU result, store data, rd, branch mispredict, prev_predition_addr, final_verdict, funct3, rs2 |
+| `id_ex`  | 259 b | Control signals, PC, rs1/rs2 data, imm, register addresses, ALU ctrl, return addr, prediction |
+| `ex_mem` | 155 b | Control signals, return addr, zero flag, ALU result, store data, rd, branch mispredict, prev_predition_addr, final_verdict, funct3, rs2 |
 | `mem_wb` | 81 b  | Control signals, read data, ALU result, rd, mispredict flag, branch, funct3 |
 
 ---
