@@ -478,7 +478,7 @@ module top (
 
 		ex_mem_current_state [68:5]     <= return_addr_ex ;
 		ex_mem_current_state [69]	    <= zero_flag 	     ;
-		ex_mem_current_state [101:70]   <= (id_ex[1] & id_ex[4]) ? link_addr : alu_result_ex ;// if (branch & reg_write)
+		ex_mem_current_state [101:70]   <= (id_ex[1] & id_ex[4]) ? link_addr : alu_result_ex ;// if jal/jalr (branch & reg_write)
 		ex_mem_current_state [133:102]  <= write_data_ex     ;
 		ex_mem_current_state [138:134]  <= rd_ex 	     ;
 		ex_mem_current_state [139]	    <= branch_mispredicted_ex  ;
@@ -505,7 +505,7 @@ module top (
 	};
 
     // ALU
-	assign alu_src_2 = (id_ex[5]) ? id_ex [167:136] : alu_muxB_src ;// [167:136] for immed, [135:104] reg_file_out2_id.
+	assign alu_src_2 = (id_ex[5]) ? id_ex [167:136] : alu_muxB_src ;//[5] alu_src_ctrl_id , [167:136] for immed, [135:104] reg_file_out2_id.
 
 
 	alu ALU(
