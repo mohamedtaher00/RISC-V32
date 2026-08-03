@@ -2,16 +2,16 @@
 // Pipeline Register Bit Field Map
 //============================================================================
 // if_id [102:0]:
-//   [63:0] = inst_addr_if
-//   [95:64] = instruction
-//   [97:96] = our_prediction ;IF/ID [102:0]
+//   [63:0]   = inst_addr_if
+//   [95:64]  = instruction
+//   [97:96]  = our_prediction
 //   [102:98] = pc_addr_low_bits
 //
 //
 // id_ex [258:0]:
-//   [7:0] =     id_ex_ctrl_unit_current
-//   [71:8] =    id_ex_pc_current
-//   [103:72] =  reg_file_out1_id
+//   [7:0]     = id_ex_ctrl_unit_current
+//   [71:8]    = id_ex_pc_current
+//   [103:72]  = reg_file_out1_id
 //   [135:104] = reg_file_out2_id
 //   [167:136] = id_ex_immgen_current
 //   [172:168] = id_ex_rs1_current
@@ -22,18 +22,20 @@
 //   [252:251] = id_ex_our_prediction_current
 //   [257:253] = id_ex_previous_prediction_addr_current
 //   [258]     = is_jalr
+//   [259]     = is_lui
+//   [260]     = is_auipc
 //
 //
 // ex_mem [154:0] :
-//   [4:0] = ctrl_signals_ex
-//   [68:5]     = return_addr_ex
-//   [69]	   = zero_flag
+//   [4:0]       = ctrl_signals_ex
+//   [68:5]      = return_addr_ex
+//   [69]	     = zero_flag
 //   [101:70]    = alu_result_ex
 //   [133:102]   = write_data_ex
 //   [138:134]   = rd_ex
-//   [139]	   = branch_mispredicted_ex
+//   [139]	     = branch_mispredicted_ex
 //   [144:140]   = previous_prediction_addr_ex_mem
-//   [145]	   = final_verdict
+//   [145]	     = final_verdict
 //   [148:146]   = id_ex[185:183] // funct3 field
 //   [153:149]   = id_ex[177:173] // rs2_ex
 //   [154]       = id_ex[258]   // is_jalr
@@ -115,7 +117,7 @@ module top (
 
 
 	// ID stage intermediate signals
-	wire [258:0] id_ex ;
+	wire [260:0] id_ex ;
 
 
 	// control_unit/data path interface
@@ -162,9 +164,6 @@ module top (
 	wire [4:0]  id_ex_previous_prediction_addr_nxt ;
 
 
-
-
-
 	wire stall_ctrl ;
 	wire stall_cnt ;
     wire [7:0] stall_mux_out ;
@@ -172,6 +171,14 @@ module top (
 
 	wire [31:0] reg_file_out1_id 	;
 	wire [31:0] reg_file_out2_id 	   ;
+
+    wire is_auipc_id  ;
+    wire is_lui_id ;
+    wire id_ex_is_lui_nxt ;
+    wire id_ex_is_auipc_nxt;
+
+    reg id_ex_is_lui_ctrl_current ;
+    reg id_ex_is_auipc_ctrl_current;
 
 
 	// EX stage intermediate signals
@@ -181,6 +188,7 @@ module top (
 	// Alu/data path interface
 	reg [31:0] alu_src_1;
     wire [31:0] alu_src_2 ;
+    reg [31:0] alu_muxA_src;
     reg [31:0]  alu_muxB_src ;
 	wire zero_flag ;
 	wire [31:0] alu_result_ex ;
@@ -208,7 +216,9 @@ module top (
 
     wire [31:0] link_addr ;
 
+
     wire is_jalr_ex ;
+
 
 	// MEM stage intermediate signals
 	wire [80:0] mem_wb ;
@@ -318,11 +328,12 @@ module top (
 		end
 	end
 	bht predictor(
-		.reset_n(reset_n),
+        .reset_n(reset_n),
 		.clk(clk),
 		.addr_needs_predition(pc_addr_if[4:0]), //low order bits from the pc
 		.previous_prediction_addr_ID_EX(id_ex [257:253]) ,
 	    .previous_prediction_addr_MEM_WB(mem_wb[77:73]),
+        .previous_prediction_addr_ex_mem(ex_mem[144:140]),
 		.branch_EX_MEM(ex_mem[4]),
 		.branch_MEM_WB(mem_wb[72]) ,
 		.final_verdict(ex_mem[145]) ,// 1 means taken, 0 means not taken -> from MEM/WB
@@ -340,7 +351,9 @@ module top (
 		.Memwrite(mem_write_ctrl_id),
 	    .Alusrc(alu_src_ctrl_id),
 	    .Regwrite(reg_write_ctrl_id),
-        .is_jalr(is_jalr_ctrl_id)
+        .is_jalr(is_jalr_ctrl_id),
+        .is_auipc(is_auipc_id),
+        .is_lui(is_lui_id)
 	);
 
 	assign stall_mux_out = stall_ctrl ? 8'b0 :  {alu_op_ctrl_id, alu_src_ctrl_id, branch_ctrl_id,  mem_read_ctrl_id, mem_write_ctrl_id, reg_write_ctrl_id, memtoreg_ctrl_id} ;
@@ -378,6 +391,8 @@ module top (
     assign id_ex [252:251] = id_ex_our_prediction_current ;
 	assign id_ex [257:253] = id_ex_previous_prediction_addr_current ;
     assign id_ex [258]     = id_ex_jalr_ctrl_current        ;
+    assign id_ex [259]     = id_ex_is_lui_ctrl_current ;
+    assign id_ex [260]     = id_ex_is_auipc_ctrl_current ;
 
 
 	always @(posedge clk) begin //stuff that needed to be clocked  ; current state logic
@@ -392,6 +407,8 @@ module top (
 		id_ex_our_prediction_current           <= id_ex_our_prediction_nxt ;
 		id_ex_previous_prediction_addr_current <= id_ex_previous_prediction_addr_nxt ;
         id_ex_jalr_ctrl_current                <= id_ex_is_jalr_nxt   ;
+        id_ex_is_lui_ctrl_current              <= id_ex_is_lui_nxt ;
+        id_ex_is_auipc_ctrl_current            <= id_ex_is_auipc_nxt ;
 	end
 
 	// next state logic
@@ -406,6 +423,8 @@ module top (
         assign id_ex_rs2_nxt  = if_id[88:84] ;
         assign id_ex_return_addr_nxt = return_addr_id ;
         assign id_ex_previous_prediction_addr_nxt = if_id[102:98] ;
+        assign id_ex_is_lui_nxt = is_lui_id ;
+        assign id_ex_is_auipc_nxt = is_auipc_id ;
 
 
 
@@ -431,6 +450,10 @@ module top (
         .branch_ex_mem(ex_mem[4]),
         .reg_w_ex_mem(ex_mem[1]),
         .is_jalr_ex_mem(ex_mem[154]),
+
+        .is_lui(is_lui_id),
+        .is_auipc(is_auipc_id),
+        .is_jal(branch_ctrl_id & reg_write_ctrl_id & ~is_jalr_ctrl_id),
 
 		.stall_cnt(stall_cnt),
 		.flush(stall_ctrl)
@@ -471,14 +494,23 @@ module top (
 		//current_state logic
 		//EX_MEM_pipeline_reg[139] is branch_mispredicted_ex, and mem_wb[71] also. ex_mem[4] and mem_wb[72] are branch
 		if ((ex_mem[139] & ex_mem[4] ) | (mem_wb[71] & mem_wb[72] ) )
-			ex_mem_current_state [4:0] <= 5'b00000 ;
+			ex_mem_current_state [4:0]    <= 5'b00000 ;
 		else
 			ex_mem_current_state [4:0]    <= ctrl_signals_ex           ;
 
 
 		ex_mem_current_state [68:5]     <= return_addr_ex ;
 		ex_mem_current_state [69]	    <= zero_flag 	     ;
-		ex_mem_current_state [101:70]   <= (id_ex[1] & id_ex[4]) ? link_addr : alu_result_ex ;// if jal/jalr (branch & reg_write)
+		//ex_mem_current_state [101:70]   <= (id_ex[1] & id_ex[4]) ? link_addr : alu_result_ex ;// if jal/jalr (branch & reg_write)
+        if (id_ex[1] & id_ex[4])// if jal/jalr (branch & reg_write)
+            ex_mem_current_state[101:70] <= link_addr;
+        else if (id_ex[260])// if auipc
+            ex_mem_current_state[101:70] <= alu_result_ex;
+        else if (id_ex[259]) // if lui
+            ex_mem_current_state[101:70] <= id_ex[167:136];// imm_out for lui; no need for alu
+        else
+            ex_mem_current_state[101:70] <= alu_result_ex;
+
 		ex_mem_current_state [133:102]  <= write_data_ex     ;
 		ex_mem_current_state [138:134]  <= rd_ex 	     ;
 		ex_mem_current_state [139]	    <= branch_mispredicted_ex  ;
@@ -505,8 +537,10 @@ module top (
 	};
 
     // ALU
+    assign alu_src_1 = (id_ex[260]) ? id_ex [39:8] : alu_muxA_src ; // [260] is_auipc, [39:8] pc
 	assign alu_src_2 = (id_ex[5]) ? id_ex [167:136] : alu_muxB_src ;//[5] alu_src_ctrl_id , [167:136] for immed, [135:104] reg_file_out2_id.
 
+    assign final_verdict = branch_mispredicted_ex;
 
 	alu ALU(
 		.alu_control_lines(alu_sel),
@@ -561,12 +595,12 @@ module top (
 	always @(*) begin
 		case (forwardA)
 		  2'b00 :
-			alu_src_1 = id_ex [103:72]	;
+			alu_muxA_src = id_ex [103:72]	;
 		  2'b10 :
-			alu_src_1 = ex_mem [101:70]   ;
+			alu_muxA_src = ex_mem [101:70]   ;
 		  2'b01 :
-			alu_src_1 = (mem_wb[0]) ? mem_wb[32:2] : mem_wb [65:34]    ;  // [0] is mem_to_reg ctrl signal, [32:2] is readed_data_mem, [65:34] is the alu_result
-			default : alu_src_1 = id_ex [103:72] ;
+			alu_muxA_src = (mem_wb[0]) ? mem_wb[32:2] : mem_wb [65:34]    ;  // [0] is mem_to_reg ctrl signal, [32:2] is readed_data_mem, [65:34] is the alu_result
+			default : alu_muxA_src = id_ex [103:72] ;
 		endcase
 	end
 	always @(*) begin
