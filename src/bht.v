@@ -4,6 +4,7 @@ module bht (
 	input [4:0]  addr_needs_predition,
 	input [4:0]  previous_prediction_addr_ID_EX, //from ID/EX
 	input [4:0]  previous_prediction_addr_MEM_WB,
+    input [4:0]  previous_prediction_addr_ex_mem,
 	input branch_EX_MEM,
 	input branch_MEM_WB,
 
@@ -52,7 +53,7 @@ module bht (
 
          // next state logic
          always @(*) begin
-         	 case (current_state )
+         	 case (history[previous_prediction_addr_ex_mem])
          	 strong_not_taken :
          	                 next_state = (final_verdict) ?  weak_not_taken : strong_not_taken ;
          	 weak_not_taken   :
