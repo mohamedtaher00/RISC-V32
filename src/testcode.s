@@ -221,6 +221,18 @@ p11_t3:
 p11_t4:
     addi x3, x0, 0x55          # 0x140: x3=0x55  (JALR fwd target)
 
+    # =====================================================================
+    # PHASE 12: LUI / AUIPC
+    #
+    #   PC         Instr                    rd   Expected
+    #   0x00000144 lui   x3, 0xFFFFF         x3   0xFFFFF000
+    #   0x00000148 auipc x4, 0x1             x4   PC(0x148) + 0x1000 = 0x00001148
+    # =====================================================================
+
+    lui   x3, 0xFFFFF          # 0x144: x3 = 0xFFFFF000 (checks low 12 bits stay
+                                #        zero and high bits are NOT sign-extended
+                                #        past bit 31 by immgen)
+    auipc x4, 0x1               # 0x148: x4 = PC + (0x1 << 12) = 0x00001148
 end_pass:
     beq  x0, x0, end_pass      # infinite loop — successful completion
 
