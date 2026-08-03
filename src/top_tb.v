@@ -1,63 +1,63 @@
 //---------------------new one by claude------------------------
 
-`timescale 1ns/1ns 
+`timescale 1ns/1ns
 
 module top_tb ;
-	
-	reg clk_tb ; 
+
+	reg clk_tb ;
 	reg reset_n_tb ;
-	
+
 	wire [31:0] prog_counter_addr_tb ;
     wire [31:0] prog_counter_next_addr_tb ;
-    wire [63:0] prog_counter_64_bit_addr_tb ; 
+    wire [63:0] prog_counter_64_bit_addr_tb ;
 
-	wire [31:0] instruction_test_tb  	; 		
+	wire [31:0] instruction_test_tb  	;
     wire [31:0] write_back_data_test_tb	;
     wire [9:0] pc_addr_test_tb 		;
     wire [3:0] alu_ctrl_lines_test_tb	;
-	
+
 	wire [1:0] alu_op_test_tb 		;
     wire alu_src_test_tb     		;
     wire branch_test_tb      		;
-    wire mem_write_ctrl_test_tb  		;	
+    wire mem_write_ctrl_test_tb  		;
     wire reg_write_ctrl_test_tb		;
     wire mem2reg_ctrl_test_tb 		;
 
 
-	wire tx_tb ; 
-	reg rx_tb ; 
+	wire tx_tb ;
+	reg rx_tb ;
 
 	top DUT (
-	.clk			(clk_tb), 
+	.clk			(clk_tb),
 	.reset_n		(reset_n_tb),
 
-	.instruction_test	( instruction_test_tb), 	
-	.write_back_data_test	( write_back_data_test_tb), 	
-	.pc_addr_test 		(pc_addr_test_tb), 	
-	.alu_ctrl_lines_test	(alu_ctrl_lines_test_tb), 
+	.instruction_test	( instruction_test_tb),
+	.write_back_data_test	( write_back_data_test_tb),
+	.pc_addr_test 		(pc_addr_test_tb),
+	.alu_ctrl_lines_test	(alu_ctrl_lines_test_tb),
 
 
-	.alu_op_test		(alu_op_test_tb), 	
-	.alu_src_test     	(alu_src_test_tb     	), 	
-	.branch_test      	(branch_test_tb      	), 	
-	.mem_write_ctrl_test  	(mem_write_ctrl_test_tb 	), 	
-	.reg_write_ctrl_test	(reg_write_ctrl_test_tb	), 	
+	.alu_op_test		(alu_op_test_tb),
+	.alu_src_test     	(alu_src_test_tb     	),
+	.branch_test      	(branch_test_tb      	),
+	.mem_write_ctrl_test  	(mem_write_ctrl_test_tb 	),
+	.reg_write_ctrl_test	(reg_write_ctrl_test_tb	),
 	.mem2reg_ctrl_test 	(mem2reg_ctrl_test_tb 	),
 
-	.rx			(rx_tb), 
+	.rx			(rx_tb),
 	.tx			(tx_tb)
-	
-	); 
+
+	);
 
   always #5 clk_tb = ~clk_tb ;
 
-  initial begin  
+  initial begin
     $dumpfile("top_dump.vcd") ;
-    $dumpvars(0, top_tb) ; 
+    $dumpvars(0, top_tb) ;
     clk_tb = 0 ;
     reset_n_tb = 0 ;
     #10 reset_n_tb = 1 ;
-    
+
     #2200 ;
     $display("=== RESULTS: %0d PASSED, %0d FAILED ===", pass_count, fail_count);
     $finish ;
@@ -127,7 +127,7 @@ always @(posedge clk_tb) begin
             // ------------------------------------------------------------------
             // UPDATED: PHASE 1 & 11 — Registers x1 through x8
             // ------------------------------------------------------------------
-            
+
             5'd1: case (wb_count[1])
                 1: check_wb(1,  write_back_data_test_tb, 32'hFFFFFFFF, "addi x1,x0,-1");
                 2: check_wb(1,  write_back_data_test_tb, 32'h0000010C, "ph11 jal x1,+8");
@@ -148,13 +148,15 @@ always @(posedge clk_tb) begin
                 2: check_wb(3,  write_back_data_test_tb, 32'h00000011, "ph11 addi x3,x0,0x11");
                 3: check_wb(3,  write_back_data_test_tb, 32'h00000044, "ph11 addi x3,x0,0x44");
                 4: check_wb(3,  write_back_data_test_tb, 32'h00000055, "ph11 addi x3,x0,0x55");
+                5: check_wb(3,  write_back_data_test_tb, 32'hFFFFF000, "ph12 lui x3,0xFFFFF");
                 default: ;
             endcase
 
             5'd4: case (wb_count[4])
                 1: check_wb(4,  write_back_data_test_tb, 32'h0000005A, "xori x4,x3,0xAA");
+                2: check_wb(4,  write_back_data_test_tb, 32'h00001148, "ph12 auipc x4,0x1");
                 default: begin
-                    $display("FAIL  [%-20s] x4 written (0x%08X) -- JAL flush FAILED (time=%0t)", "ph11 JAL flush", write_back_data_test_tb, $time);
+                    $display("FAIL  [%-20s] x4 written (0x%08X) -- unexpected extra write (time=%0t)", "ph12 extra write", write_back_data_test_tb, $time);
                     fail_count = fail_count + 1;
                 end
             endcase
@@ -335,7 +337,7 @@ end
 
 
 // 8 bytes (64 bits) to hold up to 8 ASCII characters for GTKWave
-reg [63:0] instr_mnemonic; 
+reg [63:0] instr_mnemonic;
 // 32 bytes (256 bits) to hold up to 32 ASCII characters for GTKWave
 
 
@@ -347,7 +349,7 @@ always @(*) begin
             // Optional: $display("IF/ID: NOP");
         end else begin
             case (instruction_test_tb[6:0]) // Opcode field
-                
+
                 // -----------------------------------------
                 // R-Type
                 // -----------------------------------------
@@ -366,7 +368,7 @@ always @(*) begin
                         default:         begin instr_mnemonic = "R-UNK   "; $display("IF/ID: Unknown R-Type"); end
                     endcase
                 end
-                
+
                 // -----------------------------------------
                 // I-Type (ALU)
                 // -----------------------------------------
@@ -380,15 +382,15 @@ always @(*) begin
                         3'b111: begin instr_mnemonic = "ANDI    "; $display("IF/ID: ANDI  rd=x%0d rs1=x%0d imm=%0d", instruction_test_tb[11:7], instruction_test_tb[19:15], $signed(instruction_test_tb[31:20])); end
                         3'b001: begin instr_mnemonic = "SLLI    "; $display("IF/ID: SLLI  rd=x%0d rs1=x%0d shamt=%0d", instruction_test_tb[11:7], instruction_test_tb[19:15], instruction_test_tb[24:20]); end
                         3'b101: begin
-                            if (instruction_test_tb[30] == 1'b0) begin 
-                                instr_mnemonic = "SRLI    "; $display("IF/ID: SRLI  rd=x%0d rs1=x%0d shamt=%0d", instruction_test_tb[11:7], instruction_test_tb[19:15], instruction_test_tb[24:20]); 
-                            end else begin 
-                                instr_mnemonic = "SRAI    "; $display("IF/ID: SRAI  rd=x%0d rs1=x%0d shamt=%0d", instruction_test_tb[11:7], instruction_test_tb[19:15], instruction_test_tb[24:20]); 
+                            if (instruction_test_tb[30] == 1'b0) begin
+                                instr_mnemonic = "SRLI    "; $display("IF/ID: SRLI  rd=x%0d rs1=x%0d shamt=%0d", instruction_test_tb[11:7], instruction_test_tb[19:15], instruction_test_tb[24:20]);
+                            end else begin
+                                instr_mnemonic = "SRAI    "; $display("IF/ID: SRAI  rd=x%0d rs1=x%0d shamt=%0d", instruction_test_tb[11:7], instruction_test_tb[19:15], instruction_test_tb[24:20]);
                             end
                         end
                     endcase
                 end
-                
+
                 // -----------------------------------------
                 // I-Type (Load)
                 // -----------------------------------------
@@ -438,10 +440,10 @@ always @(*) begin
                 7'b0110111: begin instr_mnemonic = "LUI     "; $display("IF/ID: LUI   rd=x%0d imm=0x%0h", instruction_test_tb[11:7], instruction_test_tb[31:12]); end
                 7'b0010111: begin instr_mnemonic = "AUIPC   "; $display("IF/ID: AUIPC rd=x%0d imm=0x%0h", instruction_test_tb[11:7], instruction_test_tb[31:12]); end
                 7'b1110011: begin instr_mnemonic = "SYS     "; $display("IF/ID: ECALL/EBREAK"); end
-                
-                default: begin 
-                    instr_mnemonic = "UNKNOWN "; 
-                    $display("IF/ID: UNKNOWN OPCODE 0x%0h", instruction_test_tb[6:0]); 
+
+                default: begin
+                    instr_mnemonic = "UNKNOWN ";
+                    $display("IF/ID: UNKNOWN OPCODE 0x%0h", instruction_test_tb[6:0]);
                 end
             endcase
         end
