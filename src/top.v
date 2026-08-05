@@ -63,23 +63,6 @@ module top (
 
 	    output [31:0] instruction_test  	,
         output [31:0] write_back_data_test	,
-        output [9:0] pc_addr_test 		,
-        output [3:0] alu_ctrl_lines_test	,
-
-
-
-//	output [31:0] pc_addr_if ,
-//        output reg [63:0] pc_nxt_addr_if ,
-//        output [63:0] pc_64_addr_if  ,
-
-
-    	output [1:0] alu_op_test 		,
-        output alu_src_test     		,
-        output branch_test      		,
-        output mem_write_ctrl_test  		,
-        output reg_write_ctrl_test		,
-        output mem2reg_ctrl_test,
-
 
 	// UART(tty) interface
 	    input rx,
@@ -186,7 +169,7 @@ module top (
 
 
 	// Alu/data path interface
-	reg [31:0] alu_src_1;
+	wire [31:0] alu_src_1;
     wire [31:0] alu_src_2 ;
     reg [31:0] alu_muxA_src;
     reg [31:0]  alu_muxB_src ;
@@ -501,7 +484,7 @@ module top (
 
 		ex_mem_current_state [68:5]     <= return_addr_ex ;
 		ex_mem_current_state [69]	    <= zero_flag 	     ;
-		//ex_mem_current_state [101:70]   <= (id_ex[1] & id_ex[4]) ? link_addr : alu_result_ex ;// if jal/jalr (branch & reg_write)
+
         if (id_ex[1] & id_ex[4])// if jal/jalr (branch & reg_write)
             ex_mem_current_state[101:70] <= link_addr;
         else if (id_ex[260])// if auipc
@@ -718,16 +701,7 @@ module top (
 
 
 
-	assign alu_op_test = id_ex [7:6] ;
-	assign alu_src_test= id_ex [5] ;
-	assign branch_test = final_verdict	 ;
-	assign mem_write_ctrl_test = ex_mem[2]  ;
-	assign reg_write_ctrl_test = regwrite_ctrl_wb ;
-	assign mem2reg_ctrl_test   = mem_wb[0]  ;
 
-
-	assign alu_ctrl_lines_test = alu_sel ;
-	assign pc_addr_test = pc_addr_if [9:0] ;
 	assign instruction_test = instruction ;
 	assign write_back_data_test = write_back_data ;
 endmodule
