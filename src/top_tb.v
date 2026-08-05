@@ -33,16 +33,7 @@ module top_tb ;
 
 	.instruction_test	( instruction_test_tb),
 	.write_back_data_test	( write_back_data_test_tb),
-	.pc_addr_test 		(pc_addr_test_tb),
-	.alu_ctrl_lines_test	(alu_ctrl_lines_test_tb),
 
-
-	.alu_op_test		(alu_op_test_tb),
-	.alu_src_test     	(alu_src_test_tb     	),
-	.branch_test      	(branch_test_tb      	),
-	.mem_write_ctrl_test  	(mem_write_ctrl_test_tb 	),
-	.reg_write_ctrl_test	(reg_write_ctrl_test_tb	),
-	.mem2reg_ctrl_test 	(mem2reg_ctrl_test_tb 	),
 
 	.rx			(rx_tb),
 	.tx			(tx_tb)
