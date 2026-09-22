@@ -50,7 +50,7 @@
 //   [71]    = branch_mispredicted_mem ;
 //   [72]    = branch_mem 	;
 //   [77:73] = previous_prediction_addr_mem
-//   [80:78] = ex_mem [148:146] // funct3 field (to handle/mask loaded data from data_mem for loads)
+//   [80:78] = ex_mem [147:145] // funct3 field (to handle/mask loaded data from data_mem for loads)
 //
 //
 //============================================================================
@@ -251,7 +251,7 @@ module top (
 		else if (ex_mem [139] & ex_mem[4])begin  // ex_mem [139]: branch_mispredicted_ex, ex_mem[4]: branch
 			pc_nxt_addr_if = ex_mem[68:5]  ; //  ex_mem[68:5]: return addr
 		end
-        else if (is_jalr_ex & ~(mem_wb[71])) begin // ex_mem[154]: is_jalr
+        else if (is_jalr_ex & ~(mem_wb[71])) begin // ex_mem [153]: is_jalr
             pc_nxt_addr_if = alu_result_ex ;
         end
         else if (branch_ctrl_id & reg_write_ctrl_id & ~is_jalr_ctrl_id & ~(mem_wb[71])) begin // if (branch & reg_write) and not jalr and no prior misprediction
@@ -439,7 +439,7 @@ module top (
         .is_jalr_id_ex(id_ex[258]),
         .branch_ex_mem(ex_mem[4]),
         .reg_w_ex_mem(ex_mem[1]),
-        .is_jalr_ex_mem(ex_mem[154]),
+        .is_jalr_ex_mem(ex_mem [153]),
 
         .is_lui(is_lui_id),
         .is_auipc(is_auipc_id),
@@ -515,17 +515,17 @@ module top (
 		ex_mem_current_state [138:134]  <= rd_ex 	     ;
 		ex_mem_current_state [139]	    <= branch_mispredicted_ex  ;
 		ex_mem_current_state [144:140]  <= previous_prediction_addr_ex_mem ;
-		ex_mem_current_state [145]	    <= final_verdict ;
-        ex_mem_current_state [150:146]  <= rs2_ex ;
+		//ex_mem_current_state [145]	    <= final_verdict ;
+        ex_mem_current_state [150:146]  <= rs2_ex ; // becomes ex_mem
 		funct3_ex_current               <= funct3_ex 	;
         ex_mem_current_state [151]      <= is_jalr_ex ;
 	end
        // output logic
 	assign ex_mem = {
-        ex_mem_current_state [151],
-        ex_mem_current_state [150:146],
-		funct3_ex_current,
-		ex_mem_current_state [145] ,
+        ex_mem_current_state [151], // ex_mem[154] -> changes to ex_mem [153] Done
+        ex_mem_current_state [150:146], // ex_mem[153:149] -> changes to ex_mem[152:148] Done
+		funct3_ex_current, // ex_mem [148:146] -> changes to ex_mem [147:145] Done
+		//ex_mem_current_state [145] ,
 		ex_mem_current_state [144:140] ,
 		ex_mem_current_state  [139],
 		ex_mem_current_state  [138:134]    ,
@@ -540,7 +540,7 @@ module top (
     assign alu_src_1 = (id_ex[260]) ? id_ex [39:8] : alu_muxA_src ; // [260] is_auipc, [39:8] pc
 	assign alu_src_2 = (id_ex[5]) ? id_ex [167:136] : alu_muxB_src ;//[5] alu_src_ctrl_id , [167:136] for immed, [135:104] reg_file_out2_id.
 
-    assign final_verdict = branch_mispredicted_ex;
+    //assign final_verdict = branch_mispredicted_ex;
     assign alu_sel_ex    = id_ex [264:261]   ; // alu_control output
 
 	alu ALU(
@@ -633,7 +633,7 @@ module top (
 	assign branch_mispredicted_mem = ex_mem [139] ;
 	assign branch_mem = ex_mem[4] ;
 	assign previous_prediction_addr_mem [4:0] = ex_mem[144:140]	;
-	assign funct3_mem = ex_mem[148:146] ;
+	assign funct3_mem = ex_mem [147:145] ;
 	// current sate logic
 
 	always @(posedge clk) begin
@@ -649,14 +649,14 @@ module top (
 
 
 
-    assign write_data_mem = ((ex_mem[153:149] == mem_wb[70:66]) & mem_wb[1]) ? mem_wb[65:34] : ex_mem[133:102] ; // ex_mem[153:149] is rs2
+    assign write_data_mem = ((ex_mem [152:148] == mem_wb[70:66]) & mem_wb[1]) ? mem_wb[65:34] : ex_mem[133:102] ; // ex_mem [152:148] is rs2
                                                                                                                 // mem_wb[70:66] is rd
 	data_mem_wrapper data_mem_ (
 	.clk		(clk),
 	.data_addr	(alu_result_mem[13:0]),
 	.w_data_MEM	(write_data_mem),
 	.mem_wren	(ex_mem[2] & sel_dmem_mem),
-	.funct3		(ex_mem[148:146]),
+	.funct3		(ex_mem [147:145]),
 	.data		(readed_data_mem_mem)
 	);
 
