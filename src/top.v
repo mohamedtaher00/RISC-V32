@@ -8,7 +8,7 @@
 //   [102:98] = pc_addr_low_bits
 //
 //
-// id_ex [258:0]:
+// id_ex [264:0]:
 //   [7:0]     = id_ex_ctrl_unit_current
 //   [71:8]    = id_ex_pc_current
 //   [103:72]  = reg_file_out1_id
@@ -24,6 +24,7 @@
 //   [258]     = is_jalr
 //   [259]     = is_lui
 //   [260]     = is_auipc
+//   [264:261] = alu_sel_id
 //
 //
 // ex_mem [154:0] :
@@ -100,7 +101,7 @@ module top (
 
 
 	// ID stage intermediate signals
-	wire [260:0] id_ex ;
+	wire [264:0] id_ex ;
 
 
 	// control_unit/data path interface
@@ -163,6 +164,10 @@ module top (
     reg id_ex_is_lui_ctrl_current ;
     reg id_ex_is_auipc_ctrl_current;
 
+    reg [3:0]  id_ex_alu_sel_current ;
+
+
+	wire [3:0] alu_sel_id ;
 
 	// EX stage intermediate signals
 	wire [154:0] ex_mem ;
@@ -175,7 +180,7 @@ module top (
     reg [31:0]  alu_muxB_src ;
 	wire zero_flag ;
 	wire [31:0] alu_result_ex ;
-	wire [3:0] alu_sel ;
+	wire [3:0] alu_sel_ex ;
 
 
 
@@ -376,6 +381,7 @@ module top (
     assign id_ex [258]     = id_ex_jalr_ctrl_current        ;
     assign id_ex [259]     = id_ex_is_lui_ctrl_current ;
     assign id_ex [260]     = id_ex_is_auipc_ctrl_current ;
+    assign id_ex [264:261] = id_ex_alu_sel_current  ;
 
 
 	always @(posedge clk) begin //stuff that needed to be clocked  ; current state logic
@@ -392,6 +398,7 @@ module top (
         id_ex_jalr_ctrl_current                <= id_ex_is_jalr_nxt   ;
         id_ex_is_lui_ctrl_current              <= id_ex_is_lui_nxt ;
         id_ex_is_auipc_ctrl_current            <= id_ex_is_auipc_nxt ;
+        id_ex_alu_sel_current                  <= alu_sel_id ;
 	end
 
 	// next state logic
@@ -461,6 +468,16 @@ module top (
 			return_addr_id = branch_target_addr_id ;
 	end
 
+  // ALU control
+
+	alu_control ALU_Control(
+		.ALUOp(alu_op_ctrl_id),
+		.instruction({if_id[94], if_id[78:76]}),  // {funct7 sixth bit, funct3}
+		.alu_control_lines(alu_sel_id)
+	);
+
+
+
   // EX stage
 
 	//next state logic
@@ -524,9 +541,10 @@ module top (
 	assign alu_src_2 = (id_ex[5]) ? id_ex [167:136] : alu_muxB_src ;//[5] alu_src_ctrl_id , [167:136] for immed, [135:104] reg_file_out2_id.
 
     assign final_verdict = branch_mispredicted_ex;
+    assign alu_sel_ex    = id_ex [264:261]   ; // alu_control output
 
 	alu ALU(
-		.alu_control_lines(alu_sel),
+		.alu_control_lines(alu_sel_ex), // alu_control output
 		.operand1(alu_src_1),
 		.operand2(alu_src_2),
 		.ALU_result(alu_result_ex),
@@ -540,14 +558,6 @@ module top (
         .s(link_addr),
         .c_out()
     );
-
-  // ALU control
-
-	alu_control ALU_Control(
-		.ALUOp(id_ex [7:6]),
-		.instruction(id_ex [186:183]), // {func7 6th bit 30th bit in the instruction, funct3}
-		.alu_control_lines(alu_sel)
-	);
 
 
     branch_condition bran_cond(
