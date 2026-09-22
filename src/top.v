@@ -27,7 +27,7 @@
 //   [264:261] = alu_sel_id
 //
 //
-// ex_mem [154:0] :
+// ex_mem [153:0] :
 //   [4:0]       = ctrl_signals_ex
 //   [68:5]      = return_addr_ex
 //   [69]	     = zero_flag
@@ -36,10 +36,9 @@
 //   [138:134]   = rd_ex
 //   [139]	     = branch_mispredicted_ex
 //   [144:140]   = previous_prediction_addr_ex_mem
-//   [145]	     = final_verdict
-//   [148:146]   = id_ex[185:183] // funct3 field
-//   [153:149]   = id_ex[177:173] // rs2_ex
-//   [154]       = id_ex[258]   // is_jalr
+//   [147:145]   = id_ex[185:183] // funct3 field
+//   [152:148]   = id_ex[177:173] // rs2_ex
+//   [153]       = id_ex[258]   // is_jalr
 //
 //
 // mem_wb [80:0] :
@@ -184,7 +183,6 @@ module top (
 
 
 
-	wire final_verdict ;
 
 	reg [2:0] funct3_ex_current ;
 
@@ -515,17 +513,15 @@ module top (
 		ex_mem_current_state [138:134]  <= rd_ex 	     ;
 		ex_mem_current_state [139]	    <= branch_mispredicted_ex  ;
 		ex_mem_current_state [144:140]  <= previous_prediction_addr_ex_mem ;
-		//ex_mem_current_state [145]	    <= final_verdict ;
         ex_mem_current_state [150:146]  <= rs2_ex ; // becomes ex_mem
 		funct3_ex_current               <= funct3_ex 	;
         ex_mem_current_state [151]      <= is_jalr_ex ;
 	end
        // output logic
 	assign ex_mem = {
-        ex_mem_current_state [151], // ex_mem[154] -> changes to ex_mem [153] Done
-        ex_mem_current_state [150:146], // ex_mem[153:149] -> changes to ex_mem[152:148] Done
-		funct3_ex_current, // ex_mem [148:146] -> changes to ex_mem [147:145] Done
-		//ex_mem_current_state [145] ,
+        ex_mem_current_state [151],
+        ex_mem_current_state [150:146],
+		funct3_ex_current,
 		ex_mem_current_state [144:140] ,
 		ex_mem_current_state  [139],
 		ex_mem_current_state  [138:134]    ,
@@ -540,7 +536,6 @@ module top (
     assign alu_src_1 = (id_ex[260]) ? id_ex [39:8] : alu_muxA_src ; // [260] is_auipc, [39:8] pc
 	assign alu_src_2 = (id_ex[5]) ? id_ex [167:136] : alu_muxB_src ;//[5] alu_src_ctrl_id , [167:136] for immed, [135:104] reg_file_out2_id.
 
-    //assign final_verdict = branch_mispredicted_ex;
     assign alu_sel_ex    = id_ex [264:261]   ; // alu_control output
 
 	alu ALU(
