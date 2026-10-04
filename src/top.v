@@ -450,13 +450,7 @@ module top (
 
 	 //target address adder/calculator
 
-	rca # (.n(64)) adder2(
-		.x({32'b0, immgen_out_id}), // immed
-		.y(if_id[63:0]), //PC address
-		.c_in(1'b0),
-		.s(branch_target_addr_id),
-		.c_out()//we'll ignore the overflow for now
-	);
+    assign branch_target_addr_id = if_id[63:0] + immgen_out_id; // pc_addr + immed
 
 	// return address mux
 	always @(*) begin
