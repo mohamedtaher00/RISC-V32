@@ -581,7 +581,7 @@ module top (
 		  2'b10 :
 			alu_muxA_src = ex_mem [101:70]   ;
 		  2'b01 :
-			alu_muxA_src = (mem_wb[0]) ? mem_wb[32:2] : mem_wb [65:34]    ;  // [0] is mem_to_reg ctrl signal, [32:2] is readed_data_mem, [65:34] is the alu_result
+			alu_muxA_src = (mem_wb[0]) ? mem_wb[33:2] : mem_wb [65:34]    ;  // [0] is mem_to_reg ctrl signal, [32:2] is readed_data_mem, [65:34] is the alu_result
 			default : alu_muxA_src = id_ex [103:72] ;
 		endcase
 	end
