@@ -1,47 +1,44 @@
-module reg_file 
-	#(parameter WIDTH = 32, parameter ADDR_WIDTH = 5 ) 
-	(
-		input clk,
-		input we, 	
-		input [ADDR_WIDTH-1:0] r_addr1, 
-		input [ADDR_WIDTH-1:0] r_addr2, 
-		input [ADDR_WIDTH-1:0] w_addr, 
-		input [WIDTH-1:0] w_data_reg_file, 	
+module reg_file #(
+    parameter WIDTH = 32,
+    parameter ADDR_WIDTH = 5
+) (
+    input clk,
+    input we,
+    input [ADDR_WIDTH-1:0] r_addr1,
+    input [ADDR_WIDTH-1:0] r_addr2,
+    input [ADDR_WIDTH-1:0] w_addr,
+    input [WIDTH-1:0] w_data_reg_file,
 
-		output reg [WIDTH-1:0] read_reg1,
-		output reg [WIDTH-1:0] read_reg2
-	);
+    output reg [WIDTH-1:0] read_reg1,
+    output reg [WIDTH-1:0] read_reg2
+);
 
-	initial begin 
-		$readmemb("reg_file_table.mem", mem) ;	
-	end 
-	localparam DEPTH = 2**ADDR_WIDTH ;
-	(* ramstyle = "M9K" *) reg [WIDTH-1:0] mem [0:DEPTH-1] ;
+  initial begin
+    $readmemb("reg_file_table.mem", mem);
+  end
+  localparam DEPTH = 2 ** ADDR_WIDTH;
+  (* ramstyle = "M9K" *) reg [WIDTH-1:0] mem[0:DEPTH-1];
 
-	// write before read reg_file
-	always @(posedge clk) begin 
-		if (we && (w_addr != 5'd0) ) begin 
-			if (w_addr == r_addr1) begin  
-				read_reg1 <= w_data_reg_file ;
-		        read_reg2 <= mem[r_addr2] ;
-			    mem[w_addr] <= w_data_reg_file ; 	
-			end 	
-			else if (w_addr == r_addr2) begin  
-				read_reg2 <= w_data_reg_file ;
-		        read_reg1 <= mem[r_addr1] ;
-				mem[w_addr] <= w_data_reg_file ; 
-			end 	
-			else begin 
-				mem[w_addr] <= w_data_reg_file ; 	
-				read_reg1 <= mem[r_addr1] ; 	
-	 	        read_reg2 <= mem[r_addr2] ;
-			end
-		end 
-		
-		else begin 
-			read_reg1 <= mem[r_addr1] ;	
-            read_reg2 <= mem[r_addr2] ;
-		end
-	end 	
+  // write before read reg_file
+  always @(posedge clk) begin
+    if (we && (w_addr != 5'd0)) begin
+      if (w_addr == r_addr1) begin
+        read_reg1   <= w_data_reg_file;
+        read_reg2   <= mem[r_addr2];
+        mem[w_addr] <= w_data_reg_file;
+      end else if (w_addr == r_addr2) begin
+        read_reg2   <= w_data_reg_file;
+        read_reg1   <= mem[r_addr1];
+        mem[w_addr] <= w_data_reg_file;
+      end else begin
+        mem[w_addr] <= w_data_reg_file;
+        read_reg1   <= mem[r_addr1];
+        read_reg2   <= mem[r_addr2];
+      end
+    end else begin
+      read_reg1 <= mem[r_addr1];
+      read_reg2 <= mem[r_addr2];
+    end
+  end
 
 endmodule

@@ -30,11 +30,11 @@
 // ex_mem [153:0] :
 //   [4:0]       = ctrl_signals_ex
 //   [68:5]      = return_addr_ex
-//   [69]	     = zero_flag
+//   [69]        = zero_flag
 //   [101:70]    = alu_result_ex
 //   [133:102]   = write_data_ex
 //   [138:134]   = rd_ex
-//   [139]	     = branch_mispredicted_ex
+//   [139]       = branch_mispredicted_ex
 //   [144:140]   = previous_prediction_addr_ex_mem
 //   [147:145]   = id_ex[185:183] // funct3 field
 //   [152:148]   = id_ex[177:173] // rs2_ex
@@ -42,12 +42,12 @@
 //
 //
 // mem_wb [80:0] :
-//   [1:0]   = ctrl_signals_mem ;
-//   [33:2]  = readed_data_mem ;
-//   [65:34] = alu_result_mem ;
-//   [70:66] = rd_mem		;
-//   [71]    = branch_mispredicted_mem ;
-//   [72]    = branch_mem 	;
+//   [1:0]   = ctrl_signals_mem
+//   [33:2]  = readed_data_mem
+//   [65:34] = alu_result_mem
+//   [70:66] = rd_mem
+//   [71]    = branch_mispredicted_mem
+//   [72]    = branch_mem
 //   [77:73] = previous_prediction_addr_mem
 //   [80:78] = ex_mem [147:145] // funct3 field (to handle/mask loaded data from data_mem for loads)
 //
@@ -56,17 +56,17 @@
 
 
 module top (
-       input clk,
-       input reset_n,
+    input clk,
+    input reset_n,
 
 
 
-	    output [31:0] instruction_test  	,
-        output [31:0] write_back_data_test	,
+    output [31:0] instruction_test,
+    output [31:0] write_back_data_test,
 
-	// UART(tty) interface
-	    input rx,
-	    output tx
+    // UART(tty) interface
+    input  rx,
+    output tx
 
 );
 
@@ -74,345 +74,354 @@ module top (
   reg [1:0] boot_cnt;
 
   always @(posedge clk or negedge reset_n) begin
-      if (!reset_n)
-          boot_cnt <= 2'd0;
-      else if (boot_cnt < 2'd3)
-          boot_cnt <= boot_cnt + 2'd1;
+    if (!reset_n) boot_cnt <= 2'd0;
+    else if (boot_cnt < 2'd3) boot_cnt <= boot_cnt + 2'd1;
   end
 
-  wire pipeline_valid ;
+  wire pipeline_valid;
   assign pipeline_valid = (boot_cnt >= 2'd3);
 
 
-	// IF stage intermediate signals
-	wire [102:0] if_id ;
-	reg [63:0] inst_addr_if ;
+  // IF stage intermediate signals
+  wire [102:0] if_id;
+  reg  [ 63:0] inst_addr_if;
 
-	wire [63:0] inst_addr_plus4_if ;
+  wire [ 63:0] inst_addr_plus4_if;
 
-	wire [31:0] instruction ;
+  wire [ 31:0] instruction;
 
-	wire [63:0] pc_64_addr_if ;
-	reg [63:0] pc_nxt_addr_if ;
-	wire [13:0]  pc_addr_if ; // it should be [ADDR_WIDRH-1:0]
-	reg [4:0] pc_addr_low_bits ;
-	wire [1:0] our_prediction ;
-
-
-	// ID stage intermediate signals
-	wire [264:0] id_ex ;
+  wire [ 63:0] pc_64_addr_if;
+  reg  [ 63:0] pc_nxt_addr_if;
+  wire [ 13:0] pc_addr_if;  // it should be [ADDR_WIDRH-1:0]
+  reg  [  4:0] pc_addr_low_bits;
+  wire [  1:0] our_prediction;
 
 
-	// control_unit/data path interface
-	wire branch_ctrl_id ;
-	wire mem_write_ctrl_id ;
-	wire memtoreg_ctrl_id ;
-	wire mem_read_ctrl_id ;
-	wire [1:0] alu_op_ctrl_id ;
-	wire alu_src_ctrl_id ;
-	wire reg_write_ctrl_id ;
-    wire is_jalr_ctrl_id ;
+  // ID stage intermediate signals
+  wire [264:0] id_ex;
 
 
-	wire [63:0] branch_target_addr_id ;
-
-	reg  [63:0] return_addr_id ;
-
-	wire [31:0] immgen_out_id ;
-
-
-
-	reg [7:0] id_ex_ctrl_unit_current ;
-    reg       id_ex_jalr_ctrl_current ;
-    reg [63:0] id_ex_pc_current;
-    reg [31:0] id_ex_immgen_current ;
-    reg [4:0] id_ex_rs1_current   ;
-    reg [4:0] id_ex_rs2_current   ;
-    reg [4:0] id_ex_rd_current      ;
-	reg [3:0] id_ex_alu_ctrl_current ;
-	reg [63:0]id_ex_return_addr_current	;
-    reg [1:0] id_ex_our_prediction_current ;
-	reg [4:0] id_ex_previous_prediction_addr_current ;
-
-	wire [7:0]  id_ex_ctrl_unit_nxt ;
-    wire        id_ex_is_jalr_nxt  ;
-    wire [63:0] id_ex_pc_nxt;
-    wire [31:0] id_ex_immgen_nxt ;
-    wire [4:0]  id_ex_rs1_nxt   ;
-    wire [4:0]  id_ex_rs2_nxt   ;
-    wire [4:0]  id_ex_rd_nxt      ;
-	wire [3:0]  id_ex_alu_ctrl_nxt ;
-	wire [63:0] id_ex_return_addr_nxt	;
-    wire [1:0]  id_ex_our_prediction_nxt ;
-	wire [4:0]  id_ex_previous_prediction_addr_nxt ;
+  // control_unit/data path interface
+  wire         branch_ctrl_id;
+  wire         mem_write_ctrl_id;
+  wire         memtoreg_ctrl_id;
+  wire         mem_read_ctrl_id;
+  wire [  1:0] alu_op_ctrl_id;
+  wire         alu_src_ctrl_id;
+  wire         reg_write_ctrl_id;
+  wire         is_jalr_ctrl_id;
 
 
-	wire stall_ctrl ;
-	wire stall_cnt ;
-    wire [7:0] stall_mux_out ;
+  wire [ 63:0] branch_target_addr_id;
 
+  reg  [ 63:0] return_addr_id;
 
-	wire [31:0] reg_file_out1_id 	;
-	wire [31:0] reg_file_out2_id 	   ;
-
-    wire is_auipc_id  ;
-    wire is_lui_id ;
-    wire id_ex_is_lui_nxt ;
-    wire id_ex_is_auipc_nxt;
-
-    reg id_ex_is_lui_ctrl_current ;
-    reg id_ex_is_auipc_ctrl_current;
-
-    reg [3:0]  id_ex_alu_sel_current ;
-
-
-	wire [3:0] alu_sel_id ;
-
-	// EX stage intermediate signals
-	wire [154:0] ex_mem ;
-
-
-	// Alu/data path interface
-	wire [31:0] alu_src_1;
-    wire [31:0] alu_src_2 ;
-    reg [31:0] alu_muxA_src;
-    reg [31:0]  alu_muxB_src ;
-	wire zero_flag ;
-	wire [31:0] alu_result_ex ;
-	wire [3:0] alu_sel_ex ;
+  wire [ 31:0] immgen_out_id;
 
 
 
+  reg  [  7:0] id_ex_ctrl_unit_current;
+  reg          id_ex_jalr_ctrl_current;
+  reg  [ 63:0] id_ex_pc_current;
+  reg  [ 31:0] id_ex_immgen_current;
+  reg  [  4:0] id_ex_rs1_current;
+  reg  [  4:0] id_ex_rs2_current;
+  reg  [  4:0] id_ex_rd_current;
+  reg  [  3:0] id_ex_alu_ctrl_current;
+  reg  [ 63:0] id_ex_return_addr_current;
+  reg  [  1:0] id_ex_our_prediction_current;
+  reg  [  4:0] id_ex_previous_prediction_addr_current;
 
-	reg [2:0] funct3_ex_current ;
-
-	wire [2:0] funct3_ex 	;
-
-	wire [4:0] ctrl_signals_ex ;
-	wire [31:0] write_data_ex ;
-	wire [4:0] rd_ex ;
-    wire [4:0] rs2_ex ;
-	reg [151:0] ex_mem_current_state ;
-	wire [63:0] return_addr_ex ;
-
-	wire [1:0] forwardA, forwardB ;
-	wire [4:0] previous_prediction_addr_ex_mem ;
-
-    wire branch_taken ;
-
-    wire [31:0] link_addr ;
+  wire [  7:0] id_ex_ctrl_unit_nxt;
+  wire         id_ex_is_jalr_nxt;
+  wire [ 63:0] id_ex_pc_nxt;
+  wire [ 31:0] id_ex_immgen_nxt;
+  wire [  4:0] id_ex_rs1_nxt;
+  wire [  4:0] id_ex_rs2_nxt;
+  wire [  4:0] id_ex_rd_nxt;
+  wire [  3:0] id_ex_alu_ctrl_nxt;
+  wire [ 63:0] id_ex_return_addr_nxt;
+  wire [  1:0] id_ex_our_prediction_nxt;
+  wire [  4:0] id_ex_previous_prediction_addr_nxt;
 
 
-    wire is_jalr_ex ;
+  wire         stall_ctrl;
+  wire         stall_cnt;
+  wire [  7:0] stall_mux_out;
 
 
-	// MEM stage intermediate signals
-	wire [80:0] mem_wb ;
-    wire [31:0] write_data_mem ;
-	wire [31:0] readed_data_mem ;
-	wire [31:0] readed_data_mem_mem 	;
-	wire [1:0]  ctrl_signals_mem	;
-	wire branch_mem ;
-	wire [4:0] rd_mem			;
-	wire [31:0] alu_result_mem;
-	wire branch_mispredicted_ex 	;
-	wire [4:0] previous_prediction_addr_mem ;
+  wire [ 31:0] reg_file_out1_id;
+  wire [ 31:0] reg_file_out2_id;
 
-	wire sel_imem_mem ;
-    wire sel_dmem_mem ;
-    wire sel_uart_mem ;
-    wire sel_gpio_mem ;
-    wire sel_timer_mem;
+  wire         is_auipc_id;
+  wire         is_lui_id;
+  wire         id_ex_is_lui_nxt;
+  wire         id_ex_is_auipc_nxt;
 
-	wire [31:0] readed_data_uart ;
+  reg          id_ex_is_lui_ctrl_current;
+  reg          id_ex_is_auipc_ctrl_current;
 
-	//WB stage intermediate signals
-	reg [48:0] mem_wb_current_state ;
+  reg  [  3:0] id_ex_alu_sel_current;
 
-	wire [31:0] loaded_data ;
-	wire [2:0] funct3_mem ;
 
-	wire branch_mispredicted_mem 	;
+  wire [  3:0] alu_sel_id;
 
-	wire regwrite_ctrl_wb    ;
+  // EX stage intermediate signals
+  wire [154:0] ex_mem;
 
-	wire [31:0] write_back_data ;
+
+  // Alu/data path interface
+  wire [ 31:0] alu_src_1;
+  wire [ 31:0] alu_src_2;
+  reg  [ 31:0] alu_muxA_src;
+  reg  [ 31:0] alu_muxB_src;
+  wire         zero_flag;
+  wire [ 31:0] alu_result_ex;
+  wire [  3:0] alu_sel_ex;
+
+
+
+
+  reg  [  2:0] funct3_ex_current;
+
+  wire [  2:0] funct3_ex;
+
+  wire [  4:0] ctrl_signals_ex;
+  wire [ 31:0] write_data_ex;
+  wire [  4:0] rd_ex;
+  wire [  4:0] rs2_ex;
+  reg  [151:0] ex_mem_current_state;
+  wire [ 63:0] return_addr_ex;
+
+  wire [1:0] forwardA, forwardB;
+  wire [ 4:0] previous_prediction_addr_ex_mem;
+
+  wire        branch_taken;
+
+  wire [31:0] link_addr;
+
+
+  wire        is_jalr_ex;
+
+
+  // MEM stage intermediate signals
+  wire [80:0] mem_wb;
+  wire [31:0] write_data_mem;
+  wire [31:0] readed_data_mem;
+  wire [31:0] readed_data_mem_mem;
+  wire [ 1:0] ctrl_signals_mem;
+  wire        branch_mem;
+  wire [ 4:0] rd_mem;
+  wire [31:0] alu_result_mem;
+  wire        branch_mispredicted_ex;
+  wire [ 4:0] previous_prediction_addr_mem;
+
+  wire        sel_imem_mem;
+  wire        sel_dmem_mem;
+  wire        sel_uart_mem;
+  wire        sel_gpio_mem;
+  wire        sel_timer_mem;
+
+  wire [31:0] readed_data_uart;
+
+  //WB stage intermediate signals
+  reg  [48:0] mem_wb_current_state;
+
+  wire [31:0] loaded_data;
+  wire [ 2:0] funct3_mem;
+
+  wire        branch_mispredicted_mem;
+
+  wire        regwrite_ctrl_wb;
+
+  wire [31:0] write_back_data;
 
 
 
   // IF stage
-	// next_addr_mux ; we may have stall, not valid pipeline, a branch, a correction of a branch
-	always @(*) begin
-		if (!pipeline_valid) begin
-			pc_nxt_addr_if = inst_addr_plus4_if ;
-		end
-		else if (ex_mem [139] & ex_mem[4])begin  // ex_mem [139]: branch_mispredicted_ex, ex_mem[4]: branch
-			pc_nxt_addr_if = ex_mem[68:5]  ; //  ex_mem[68:5]: return addr
-		end
-        else if (is_jalr_ex & ~(mem_wb[71])) begin // ex_mem [153]: is_jalr
-            pc_nxt_addr_if = alu_result_ex ;
-        end
-        else if (branch_ctrl_id & reg_write_ctrl_id & ~is_jalr_ctrl_id & ~(mem_wb[71])) begin // if (branch & reg_write) and not jalr and no prior misprediction
-            pc_nxt_addr_if = {branch_target_addr_id[63:1], 1'b0} ;
-        end
+  // next_addr_mux ; we may have stall, not valid pipeline, a branch, a correction of a branch
+  always @(*) begin
+    if (!pipeline_valid) begin
+      pc_nxt_addr_if = inst_addr_plus4_if;
+    end else if (ex_mem[139] & ex_mem[4]) begin  // ex_mem [139]:branch_mispredicted_ex,
+                                                 // ex_mem[4]:branch
 
-		else if (our_prediction[1] & branch_ctrl_id & ~(mem_wb[71])) begin // [71] means branch in mem_wb was mispredicted
-			pc_nxt_addr_if = branch_target_addr_id ;
-		end
-		else begin
-			pc_nxt_addr_if = inst_addr_plus4_if ;
-		end
-	end
+      pc_nxt_addr_if = ex_mem[68:5];  //  ex_mem[68:5]: return addr
+    end else if (is_jalr_ex & ~(mem_wb[71])) begin  // ex_mem [153]: is_jalr
+      pc_nxt_addr_if = alu_result_ex;
+    end  // if (branch & reg_write) and not jalr and no prior misprediction
+    else if (branch_ctrl_id & reg_write_ctrl_id & ~is_jalr_ctrl_id & ~(mem_wb[71])) begin
+      pc_nxt_addr_if = {branch_target_addr_id[63:1], 1'b0};
+    end else if (our_prediction[1] & branch_ctrl_id & ~(mem_wb[71])) begin
+      // [71] means branch in mem_wb was mispredicted
+      pc_nxt_addr_if = branch_target_addr_id;
+    end else begin
+      pc_nxt_addr_if = inst_addr_plus4_if;
+    end
+  end
 
 
 
-	rca # (.n(64)) adder1(
-		.x(64'h0000_0000_0000_0004),
-		.y(pc_64_addr_if),
-		.c_in(1'b0),
-		.s(inst_addr_plus4_if),
-		.c_out()//we'll ignore the overflow for now
-	);
-    // program counter
-	prog_count  # (.INST_MEMORY_SIZE(16384)) Program_counter(
-		.clk(clk),
-		.reset_n(reset_n),
-		.stall(stall_cnt),
-		.addr_in(pc_nxt_addr_if),
-		.addr_2_INST_MEM(pc_addr_if),
-		.addr_2_IF_ID_pipeline_reg(pc_64_addr_if)
-	);
+  rca #(
+      .n(64)
+  ) adder1 (
+      .x(64'h0000_0000_0000_0004),
+      .y(pc_64_addr_if),
+      .c_in(1'b0),
+      .s(inst_addr_plus4_if),
+      .c_out()  //we'll ignore the overflow for now
+  );
+  // program counter
+  prog_count #(
+      .INST_MEMORY_SIZE(16384)
+  ) Program_counter (
+      .clk(clk),
+      .reset_n(reset_n),
+      .stall(stall_cnt),
+      .addr_in(pc_nxt_addr_if),
+      .addr_2_INST_MEM(pc_addr_if),
+      .addr_2_IF_ID_pipeline_reg(pc_64_addr_if)
+  );
 
 
-	// instr_mem_wrapper
-	instr_mem_wrapper inst_mem(
-	    .clk			(clk),
-	    .read_addr 		(pc_addr_if),
-		.readed_data		(instruction),
-		.write_addr		(ex_mem[83:70]),
-		.write_data		(ex_mem[133:102]),
-		.w_en			(sel_imem_mem & ex_mem[2]),
-		.stall			(stall_cnt)
-	);
+  // instr_mem_wrapper
+  instr_mem_wrapper inst_mem (
+      .clk   (clk),
+      .read_addr   (pc_addr_if),
+      .readed_data  (instruction),
+      .write_addr  (ex_mem[83:70]),
+      .write_data  (ex_mem[133:102]),
+      .w_en   (sel_imem_mem & ex_mem[2]),
+      .stall   (stall_cnt)
+  );
 
-       // o/p logic for IF/ID pipeline register
-	assign if_id [95:64] = instruction ;
-	assign if_id [63:0] = inst_addr_if ;
-	assign if_id [97:96] = our_prediction ;
+  // o/p logic for IF/ID pipeline register
+  assign if_id[95:64]  = instruction;
+  assign if_id[63:0]   = inst_addr_if;
+  assign if_id[97:96]  = our_prediction;
 
 
-	assign if_id [102:98] = pc_addr_low_bits  ;
+  assign if_id[102:98] = pc_addr_low_bits;
 
-	always @(posedge clk) begin
-		if(!stall_cnt) begin
-	     inst_addr_if <= pc_64_addr_if;// this part is needed to be clocked, the reg_file o/p is already clocked
-		 pc_addr_low_bits <= pc_addr_if[4:0] ;
-		end
-		else begin
-	         inst_addr_if <= inst_addr_if ;
-	         pc_addr_low_bits <= pc_addr_low_bits ;
-		end
-	end
-	bht predictor(
-        .reset_n(reset_n),
-		.clk(clk),
-		.addr_needs_predition(pc_addr_if[4:0]), //low order bits from the pc
-		.previous_prediction_addr_ID_EX(id_ex [257:253]) ,
-	    .previous_prediction_addr_MEM_WB(mem_wb[77:73]),
-        .previous_prediction_addr_ex_mem(ex_mem[144:140]),
-		.branch_EX_MEM(ex_mem[4]),
-		.branch_MEM_WB(mem_wb[72]) ,
-		.final_verdict(ex_mem[145]) ,// 1 means taken, 0 means not taken -> from MEM/WB
-		.our_prediction(our_prediction)
-	);
+  always @(posedge clk) begin
+    if (!stall_cnt) begin
+      inst_addr_if <= pc_64_addr_if;  // this part is needed to be clocked,
+                                      // the reg_file o/p is already clocked
+
+
+      pc_addr_low_bits <= pc_addr_if[4:0];
+    end else begin
+      inst_addr_if <= inst_addr_if;
+      pc_addr_low_bits <= pc_addr_low_bits;
+    end
+  end
+  bht predictor (
+      .reset_n(reset_n),
+      .clk(clk),
+      .addr_needs_predition(pc_addr_if[4:0]),  //low order bits from the pc
+      .previous_prediction_addr_ID_EX(id_ex[257:253]),
+      .previous_prediction_addr_MEM_WB(mem_wb[77:73]),
+      .previous_prediction_addr_ex_mem(ex_mem[144:140]),
+      .branch_EX_MEM(ex_mem[4]),
+      .branch_MEM_WB(mem_wb[72]),
+      .final_verdict(ex_mem[145]),  // 1 means taken, 0 means not taken -> from MEM/WB
+      .our_prediction(our_prediction)
+  );
 
   // ID stage
-    // control unit
-	control_unit Control_Unit(
-		.instruction(instruction[6:0]),
-		.branch(branch_ctrl_id),
-        .Memread(mem_read_ctrl_id),
-        .Memtoreg(memtoreg_ctrl_id),
-        .AluOp(alu_op_ctrl_id),
-		.Memwrite(mem_write_ctrl_id),
-	    .Alusrc(alu_src_ctrl_id),
-	    .Regwrite(reg_write_ctrl_id),
-        .is_jalr(is_jalr_ctrl_id),
-        .is_auipc(is_auipc_id),
-        .is_lui(is_lui_id)
-	);
+  // control unit
+  control_unit Control_Unit (
+      .instruction(instruction[6:0]),
+      .branch(branch_ctrl_id),
+      .Memread(mem_read_ctrl_id),
+      .Memtoreg(memtoreg_ctrl_id),
+      .AluOp(alu_op_ctrl_id),
+      .Memwrite(mem_write_ctrl_id),
+      .Alusrc(alu_src_ctrl_id),
+      .Regwrite(reg_write_ctrl_id),
+      .is_jalr(is_jalr_ctrl_id),
+      .is_auipc(is_auipc_id),
+      .is_lui(is_lui_id)
+  );
 
-	assign stall_mux_out = stall_ctrl ? 8'b0 :  {alu_op_ctrl_id, alu_src_ctrl_id, branch_ctrl_id,  mem_read_ctrl_id, mem_write_ctrl_id, reg_write_ctrl_id, memtoreg_ctrl_id} ;
+  assign stall_mux_out = stall_ctrl ? 8'b0 :
+      {alu_op_ctrl_id, alu_src_ctrl_id, branch_ctrl_id,  mem_read_ctrl_id, mem_write_ctrl_id,
+      reg_write_ctrl_id, memtoreg_ctrl_id} ;
 
-    // register file
+  // register file
 
-	reg_file # (.WIDTH(32), .ADDR_WIDTH(5)) Reg_file(
-		.clk(clk),
-		.we(regwrite_ctrl_wb),
-		.r_addr1(instruction[19:15]),
-		.r_addr2(instruction[24:20]),
-		.w_addr(mem_wb [70:66]),
-		.w_data_reg_file(write_back_data),
-		.read_reg1(reg_file_out1_id),
-		.read_reg2(reg_file_out2_id)
-	);
+  reg_file #(
+      .WIDTH(32),
+      .ADDR_WIDTH(5)
+  ) Reg_file (
+      .clk(clk),
+      .we(regwrite_ctrl_wb),
+      .r_addr1(instruction[19:15]),
+      .r_addr2(instruction[24:20]),
+      .w_addr(mem_wb[70:66]),
+      .w_data_reg_file(write_back_data),
+      .read_reg1(reg_file_out1_id),
+      .read_reg2(reg_file_out2_id)
+  );
 
-    // ImmGen
-	immgen ImmGen(
-	       .instruction(instruction),
-	       .imm(immgen_out_id)
-	);
+  // ImmGen
+  immgen ImmGen (
+      .instruction(instruction),
+      .imm(immgen_out_id)
+  );
 
-	// output logic
-	assign id_ex [7:0] =     id_ex_ctrl_unit_current   ;
-	assign id_ex [71:8] =    id_ex_pc_current ;
-	assign id_ex [103:72] =  reg_file_out1_id 			   ; // not clocked by pipeline register, clocked by reg_file ; rs1 register(not address)
-	assign id_ex [135:104] = reg_file_out2_id 	   ; //not clocked by pipeline register, clocked by reg_file  ; rs2 register(not address)
-	assign id_ex [167:136] = id_ex_immgen_current  ;
-	assign id_ex [172:168] = id_ex_rs1_current     ;
-	assign id_ex [177:173] = id_ex_rs2_current     ;
-	assign id_ex [182:178] = id_ex_rd_current      ;
-	assign id_ex [186:183] = id_ex_alu_ctrl_current ; // {funct 7 sixth bit, funct3}
-	assign id_ex [250:187] = id_ex_return_addr_current	;
-    assign id_ex [252:251] = id_ex_our_prediction_current ;
-	assign id_ex [257:253] = id_ex_previous_prediction_addr_current ;
-    assign id_ex [258]     = id_ex_jalr_ctrl_current        ;
-    assign id_ex [259]     = id_ex_is_lui_ctrl_current ;
-    assign id_ex [260]     = id_ex_is_auipc_ctrl_current ;
-    assign id_ex [264:261] = id_ex_alu_sel_current  ;
+  // output logic
+  assign id_ex[7:0] = id_ex_ctrl_unit_current;
+  assign id_ex[71:8] = id_ex_pc_current;
+  assign id_ex[103:72] = reg_file_out1_id;  // not clocked by pipeline register,
+                                            //clocked by reg_file ; rs1 register(not address)
+  assign id_ex[135:104] = reg_file_out2_id;  //not clocked by pipeline register,
+                                             // clocked by reg_file  ; rs2 register(not address)
+  assign id_ex[167:136] = id_ex_immgen_current;
+  assign id_ex[172:168] = id_ex_rs1_current;
+  assign id_ex[177:173] = id_ex_rs2_current;
+  assign id_ex[182:178] = id_ex_rd_current;
+  assign id_ex[186:183] = id_ex_alu_ctrl_current;  // {funct 7 sixth bit, funct3}
+  assign id_ex[250:187] = id_ex_return_addr_current;
+  assign id_ex[252:251] = id_ex_our_prediction_current;
+  assign id_ex[257:253] = id_ex_previous_prediction_addr_current;
+  assign id_ex[258] = id_ex_jalr_ctrl_current;
+  assign id_ex[259] = id_ex_is_lui_ctrl_current;
+  assign id_ex[260] = id_ex_is_auipc_ctrl_current;
+  assign id_ex[264:261] = id_ex_alu_sel_current;
 
 
-	always @(posedge clk) begin //stuff that needed to be clocked  ; current state logic
-		id_ex_alu_ctrl_current                 <= id_ex_alu_ctrl_nxt    ;
-		id_ex_ctrl_unit_current                <= id_ex_ctrl_unit_nxt;
-		id_ex_pc_current                       <= id_ex_pc_nxt ;
-		id_ex_immgen_current                   <= id_ex_immgen_nxt ;
-		id_ex_rd_current	                   <= id_ex_rd_nxt ;
-		id_ex_rs1_current	                   <= id_ex_rs1_nxt ;
-		id_ex_rs2_current	                   <= id_ex_rs2_nxt ;
-	    id_ex_return_addr_current              <= id_ex_return_addr_nxt ;
-		id_ex_our_prediction_current           <= id_ex_our_prediction_nxt ;
-		id_ex_previous_prediction_addr_current <= id_ex_previous_prediction_addr_nxt ;
-        id_ex_jalr_ctrl_current                <= id_ex_is_jalr_nxt   ;
-        id_ex_is_lui_ctrl_current              <= id_ex_is_lui_nxt ;
-        id_ex_is_auipc_ctrl_current            <= id_ex_is_auipc_nxt ;
-        id_ex_alu_sel_current                  <= alu_sel_id ;
-	end
+  always @(posedge clk) begin  //stuff that needed to be clocked  ; current state logic
+    id_ex_alu_ctrl_current                 <= id_ex_alu_ctrl_nxt;
+    id_ex_ctrl_unit_current                <= id_ex_ctrl_unit_nxt;
+    id_ex_pc_current                       <= id_ex_pc_nxt;
+    id_ex_immgen_current                   <= id_ex_immgen_nxt;
+    id_ex_rd_current                       <= id_ex_rd_nxt;
+    id_ex_rs1_current                      <= id_ex_rs1_nxt;
+    id_ex_rs2_current                      <= id_ex_rs2_nxt;
+    id_ex_return_addr_current              <= id_ex_return_addr_nxt;
+    id_ex_our_prediction_current           <= id_ex_our_prediction_nxt;
+    id_ex_previous_prediction_addr_current <= id_ex_previous_prediction_addr_nxt;
+    id_ex_jalr_ctrl_current                <= id_ex_is_jalr_nxt;
+    id_ex_is_lui_ctrl_current              <= id_ex_is_lui_nxt;
+    id_ex_is_auipc_ctrl_current            <= id_ex_is_auipc_nxt;
+    id_ex_alu_sel_current                  <= alu_sel_id;
+  end
 
-	// next state logic
-        assign id_ex_our_prediction_nxt = if_id [97:96] ;
-    	assign id_ex_ctrl_unit_nxt = stall_mux_out 	;
-        assign id_ex_is_jalr_nxt   = (stall_ctrl) ? 1'b0 : is_jalr_ctrl_id ;
-    	assign id_ex_alu_ctrl_nxt = {if_id[94], if_id[78:76]} ; // {funct7 sixth bit, funct3}
-    	assign id_ex_pc_nxt =  if_id[63:0] ;
-        assign id_ex_immgen_nxt = immgen_out_id ;
-        assign id_ex_rd_nxt   = if_id[75:71] ;
-        assign id_ex_rs1_nxt  = if_id[83:79] ;
-        assign id_ex_rs2_nxt  = if_id[88:84] ;
-        assign id_ex_return_addr_nxt = return_addr_id ;
-        assign id_ex_previous_prediction_addr_nxt = if_id[102:98] ;
-        assign id_ex_is_lui_nxt = is_lui_id ;
-        assign id_ex_is_auipc_nxt = is_auipc_id ;
+  // next state logic
+  assign id_ex_our_prediction_nxt = if_id[97:96];
+  assign id_ex_ctrl_unit_nxt = stall_mux_out;
+  assign id_ex_is_jalr_nxt = (stall_ctrl) ? 1'b0 : is_jalr_ctrl_id;
+  assign id_ex_alu_ctrl_nxt = {if_id[94], if_id[78:76]};  // {funct7 sixth bit, funct3}
+  assign id_ex_pc_nxt = if_id[63:0];
+  assign id_ex_immgen_nxt = immgen_out_id;
+  assign id_ex_rd_nxt = if_id[75:71];
+  assign id_ex_rs1_nxt = if_id[83:79];
+  assign id_ex_rs2_nxt = if_id[88:84];
+  assign id_ex_return_addr_nxt = return_addr_id;
+  assign id_ex_previous_prediction_addr_nxt = if_id[102:98];
+  assign id_ex_is_lui_nxt = is_lui_id;
+  assign id_ex_is_auipc_nxt = is_auipc_id;
 
 
 
@@ -421,286 +430,285 @@ module top (
 
 
   // hazard detection unit
-	hazard_detection_unit lw_use_hazard(
-		.ID_EX_MemRead(id_ex[3]),
-		.MEM_WB_branch(mem_wb[72]),
-		.MEM_WB_we_were_wrong(mem_wb[71]),
-		.boot_cnt(boot_cnt),
-		.our_prediction_ID_EX(id_ex[252]),
-		.branch_id_ex(id_ex[4]),
-		.ID_EX_RegisterRd(id_ex[182:178]),
-		.IF_ID_Rs1(if_id[83:79]),
-		.IF_ID_Rs2( if_id[88:84]     ),
-		.we_were_wrong_EX_MEM(ex_mem[139]),
+  hazard_detection_unit lw_use_hazard (
+      .ID_EX_MemRead       (id_ex[3]),
+      .MEM_WB_branch       (mem_wb[72]),
+      .MEM_WB_we_were_wrong(mem_wb[71]),
+      .boot_cnt            (boot_cnt),
+      .our_prediction_ID_EX(id_ex[252]),
+      .branch_id_ex        (id_ex[4]),
+      .ID_EX_RegisterRd    (id_ex[182:178]),
+      .IF_ID_Rs1           (if_id[83:79]),
+      .IF_ID_Rs2           (if_id[88:84]),
+      .we_were_wrong_EX_MEM(ex_mem[139]),
 
-        .reg_w_id_ex(id_ex[1]),
-        .is_jalr_id_ex(id_ex[258]),
-        .branch_ex_mem(ex_mem[4]),
-        .reg_w_ex_mem(ex_mem[1]),
-        .is_jalr_ex_mem(ex_mem [153]),
+      .reg_w_id_ex(id_ex[1]),
+      .is_jalr_id_ex(id_ex[258]),
+      .branch_ex_mem(ex_mem[4]),
+      .reg_w_ex_mem(ex_mem[1]),
+      .is_jalr_ex_mem(ex_mem[153]),
 
-        .is_lui(is_lui_id),
-        .is_auipc(is_auipc_id),
-        .is_jal(branch_ctrl_id & reg_write_ctrl_id & ~is_jalr_ctrl_id),
+      .is_lui  (is_lui_id),
+      .is_auipc(is_auipc_id),
+      .is_jal  (branch_ctrl_id & reg_write_ctrl_id & ~is_jalr_ctrl_id),
 
-		.stall_cnt(stall_cnt),
-		.flush(stall_ctrl)
-	);
+      .stall_cnt(stall_cnt),
+      .flush(stall_ctrl)
+  );
 
 
-	 //target address adder/calculator
+  //target address adder/calculator
 
-    assign branch_target_addr_id = if_id[63:0] + immgen_out_id; // pc_addr + immed
+  assign branch_target_addr_id = if_id[63:0] + immgen_out_id;  // pc_addr + immed
 
-	// return address mux
-	always @(*) begin
-		if(our_prediction[1]) //taken
-			return_addr_id = pc_64_addr_if ;
-		else // not taken
-			return_addr_id = branch_target_addr_id ;
-	end
+  // return address mux
+  always @(*) begin
+    if (our_prediction[1])  //taken
+      return_addr_id = pc_64_addr_if;
+    else  // not taken
+      return_addr_id = branch_target_addr_id;
+  end
 
   // ALU control
 
-	alu_control ALU_Control(
-		.ALUOp(alu_op_ctrl_id),
-		.instruction({if_id[94], if_id[78:76]}),  // {funct7 sixth bit, funct3}
-		.alu_control_lines(alu_sel_id)
-	);
+  alu_control ALU_Control (
+      .ALUOp(alu_op_ctrl_id),
+      .instruction({if_id[94], if_id[78:76]}),  // {funct7 sixth bit, funct3}
+      .alu_control_lines(alu_sel_id)
+  );
 
 
 
   // EX stage
 
-	//next state logic
-	assign rd_ex = id_ex [182:178] ;
-    assign rs2_ex = id_ex [177:173];
-	assign write_data_ex = ((mem_wb[70:66] == id_ex[177:173]) & ~ex_mem[1]) ? mem_wb[33:2] : alu_muxB_src ;
-	assign ctrl_signals_ex = id_ex [4:0] ;
-	assign return_addr_ex = id_ex [250:187] ;
-	assign previous_prediction_addr_ex_mem = id_ex [257:253] ;
-    assign funct3_ex = id_ex[185:183] ;
-    assign is_jalr_ex = id_ex[258] ;
+  //next state logic
+  assign rd_ex = id_ex[182:178];
+  assign rs2_ex = id_ex[177:173];
+  assign write_data_ex = ((mem_wb[70:66] == id_ex[177:173]) & ~ex_mem[1]) ?
+                            mem_wb[33:2] : alu_muxB_src ;
+  assign ctrl_signals_ex = id_ex[4:0];
+  assign return_addr_ex = id_ex[250:187];
+  assign previous_prediction_addr_ex_mem = id_ex[257:253];
+  assign funct3_ex = id_ex[185:183];
+  assign is_jalr_ex = id_ex[258];
 
-	always @(posedge clk) begin
-		//current_state logic
-		//EX_MEM_pipeline_reg[139] is branch_mispredicted_ex, and mem_wb[71] also. ex_mem[4] and mem_wb[72] are branch
-		if ((ex_mem[139] & ex_mem[4] ) | (mem_wb[71] & mem_wb[72] ) )
-			ex_mem_current_state [4:0]    <= 5'b00000 ;
-		else
-			ex_mem_current_state [4:0]    <= ctrl_signals_ex           ;
-
-
-		ex_mem_current_state [68:5]     <= return_addr_ex ;
-		ex_mem_current_state [69]	    <= zero_flag 	     ;
-
-        if (id_ex[1] & id_ex[4])// if jal/jalr (branch & reg_write)
-            ex_mem_current_state[101:70] <= link_addr;
-        else if (id_ex[260])// if auipc
-            ex_mem_current_state[101:70] <= alu_result_ex;
-        else if (id_ex[259]) // if lui
-            ex_mem_current_state[101:70] <= id_ex[167:136];// imm_out for lui; no need for alu
-        else
-            ex_mem_current_state[101:70] <= alu_result_ex;
-
-		ex_mem_current_state [133:102]  <= write_data_ex     ;
-		ex_mem_current_state [138:134]  <= rd_ex 	     ;
-		ex_mem_current_state [139]	    <= branch_mispredicted_ex  ;
-		ex_mem_current_state [144:140]  <= previous_prediction_addr_ex_mem ;
-        ex_mem_current_state [150:146]  <= rs2_ex ; // becomes ex_mem
-		funct3_ex_current               <= funct3_ex 	;
-        ex_mem_current_state [151]      <= is_jalr_ex ;
-	end
-       // output logic
-	assign ex_mem = {
-        ex_mem_current_state [151],
-        ex_mem_current_state [150:146],
-		funct3_ex_current,
-		ex_mem_current_state [144:140] ,
-		ex_mem_current_state  [139],
-		ex_mem_current_state  [138:134]    ,
-		ex_mem_current_state [133:102],
-		ex_mem_current_state  [101:70]     ,
-		ex_mem_current_state  [69]	     ,
-		ex_mem_current_state  [68:5]       ,
-		ex_mem_current_state  [4:0]
-	};
-
-    // ALU
-    assign alu_src_1 = (id_ex[260]) ? id_ex [39:8] : alu_muxA_src ; // [260] is_auipc, [39:8] pc
-	assign alu_src_2 = (id_ex[5]) ? id_ex [167:136] : alu_muxB_src ;//[5] alu_src_ctrl_id , [167:136] for immed, [135:104] reg_file_out2_id.
-
-    assign alu_sel_ex    = id_ex [264:261]   ; // alu_control output
-
-	alu ALU(
-		.alu_control_lines(alu_sel_ex), // alu_control output
-		.operand1(alu_src_1),
-		.operand2(alu_src_2),
-		.ALU_result(alu_result_ex),
-		.zero(zero_flag)
-	);
-
-    rca # (.n(32)) adder3 (
-        .x(32'h0000_0004),
-        .y(id_ex [39:8]), // pc
-        .c_in(1'b0),
-        .s(link_addr),
-        .c_out()
-    );
+  always @(posedge clk) begin
+    //current_state logic
+    //EX_MEM_pipeline_reg[139] is branch_mispredicted_ex, and mem_wb[71] also. ex_mem[4] and mem_wb[72] are branch
+    if ((ex_mem[139] & ex_mem[4]) | (mem_wb[71] & mem_wb[72]))
+      ex_mem_current_state[4:0] <= 5'b00000;
+    else ex_mem_current_state[4:0] <= ctrl_signals_ex;
 
 
-    branch_condition bran_cond(
-     .funct3(id_ex[185:183]),          // id_ex[183:185] is funct3 field
-     .zero(zero_flag),
-     .alu_result_0(alu_result_ex[0]),
+    ex_mem_current_state[68:5] <= return_addr_ex;
+    ex_mem_current_state[69]   <= zero_flag;
 
-     .branch_taken(branch_taken)
-    );
-	assign branch_mispredicted_ex =  id_ex[4] & (branch_taken ^ id_ex[252] ) ;
+    if (id_ex[1] & id_ex[4])  // if jal/jalr (branch & reg_write)
+      ex_mem_current_state[101:70] <= link_addr;
+    else if (id_ex[260])  // if auipc
+      ex_mem_current_state[101:70] <= alu_result_ex;
+    else if (id_ex[259])  // if lui
+      ex_mem_current_state[101:70] <= id_ex[167:136];  // imm_out for lui; no need for alu
+    else ex_mem_current_state[101:70] <= alu_result_ex;
 
-	// forwarding unit
+    ex_mem_current_state[133:102] <= write_data_ex;
+    ex_mem_current_state[138:134] <= rd_ex;
+    ex_mem_current_state[139]     <= branch_mispredicted_ex;
+    ex_mem_current_state[144:140] <= previous_prediction_addr_ex_mem;
+    ex_mem_current_state[150:146] <= rs2_ex;  // becomes ex_mem
+    funct3_ex_current             <= funct3_ex;
+    ex_mem_current_state[151]     <= is_jalr_ex;
+  end
+  // output logic
+  assign ex_mem = {
+    ex_mem_current_state[151],
+    ex_mem_current_state[150:146],
+    funct3_ex_current,
+    ex_mem_current_state[144:140],
+    ex_mem_current_state[139],
+    ex_mem_current_state[138:134],
+    ex_mem_current_state[133:102],
+    ex_mem_current_state[101:70],
+    ex_mem_current_state[69],
+    ex_mem_current_state[68:5],
+    ex_mem_current_state[4:0]
+  };
 
-	forwarding_unit Forwarding_Unit(
-	    	.ID_EX_RegisterRs1(id_ex[172:168]),
-	        .ID_EX_RegisterRs2(id_ex[177:173]),
+  // ALU
+  assign alu_src_1 = (id_ex[260]) ? id_ex[39:8] : alu_muxA_src;  // [260] is_auipc, [39:8] pc
+  assign alu_src_2 = (id_ex[5]) ? id_ex [167:136] : alu_muxB_src ;//[5] alu_src_ctrl_id ,
+                                                                //[167:136] for immed, [135:104] reg_file_out2_id.
 
-	        .EX_MEM_RegisterRd(ex_mem[138:134]),
-	        .MEM_WB_RegisterRd(mem_wb[70:66]),
+  assign alu_sel_ex = id_ex[264:261];  // alu_control output
 
-	        .EX_MEM_RegWrite(ex_mem[1]),
-	        .MEM_WB_RegWrite(mem_wb[1]),
+  alu ALU (
+      .alu_control_lines(alu_sel_ex),  // alu_control output
+      .operand1(alu_src_1),
+      .operand2(alu_src_2),
+      .ALU_result(alu_result_ex),
+      .zero(zero_flag)
+  );
 
-		    .ForwardA(forwardA),
-            .ForwardB(forwardB)
-	);
-	//forwarding muxs check out FIGURE 4.57 @ the book
-	always @(*) begin
-		case (forwardA)
-		  2'b00 :
-			alu_muxA_src = id_ex [103:72]	;
-		  2'b10 :
-			alu_muxA_src = ex_mem [101:70]   ;
-		  2'b01 :
-			alu_muxA_src = (mem_wb[0]) ? mem_wb[33:2] : mem_wb [65:34]    ;  // [0] is mem_to_reg ctrl signal, [32:2] is readed_data_mem, [65:34] is the alu_result
-			default : alu_muxA_src = id_ex [103:72] ;
-		endcase
-	end
-	always @(*) begin
-		case (forwardB)
-		  2'b00 :
-			alu_muxB_src = id_ex [135:104]	;
-		  2'b10 :
-			alu_muxB_src = ex_mem [101:70]   ;
-		  2'b01 :
-			alu_muxB_src = mem_wb [65:34]    ;
+  rca #(
+      .n(32)
+  ) adder3 (
+      .x(32'h0000_0004),
+      .y(id_ex[39:8]),  // pc
+      .c_in(1'b0),
+      .s(link_addr),
+      .c_out()
+  );
 
-		default : alu_muxB_src = id_ex [135:104] ;
-		endcase
-	end
+
+  branch_condition bran_cond (
+      .funct3      (id_ex[185:183]),   // id_ex[183:185] is funct3 field
+      .zero        (zero_flag),
+      .alu_result_0(alu_result_ex[0]),
+
+      .branch_taken(branch_taken)
+  );
+  assign branch_mispredicted_ex = id_ex[4] & (branch_taken ^ id_ex[252]);
+
+  // forwarding unit
+
+  forwarding_unit Forwarding_Unit (
+      .ID_EX_RegisterRs1(id_ex[172:168]),
+      .ID_EX_RegisterRs2(id_ex[177:173]),
+
+      .EX_MEM_RegisterRd(ex_mem[138:134]),
+      .MEM_WB_RegisterRd(mem_wb[70:66]),
+
+      .EX_MEM_RegWrite(ex_mem[1]),
+      .MEM_WB_RegWrite(mem_wb[1]),
+
+      .ForwardA(forwardA),
+      .ForwardB(forwardB)
+  );
+  //forwarding muxs check out FIGURE 4.57 @ the book
+  always @(*) begin
+    case (forwardA)
+      2'b00: alu_muxA_src = id_ex[103:72];
+      2'b10: alu_muxA_src = ex_mem[101:70];
+      2'b01:
+      alu_muxA_src = (mem_wb[0]) ? mem_wb[33:2] : mem_wb [65:34];  // [0] is mem_to_reg ctrl signal,
+                                                                // [32:2] is readed_data_mem, [65:34] is the alu_result
+      default: alu_muxA_src = id_ex[103:72];
+    endcase
+  end
+  always @(*) begin
+    case (forwardB)
+      2'b00: alu_muxB_src = id_ex[135:104];
+      2'b10: alu_muxB_src = ex_mem[101:70];
+      2'b01: alu_muxB_src = mem_wb[65:34];
+
+      default: alu_muxB_src = id_ex[135:104];
+    endcase
+  end
 
 
   // MEM stage
 
 
-	assign readed_data_mem = (sel_uart_mem) ? readed_data_uart : readed_data_mem_mem ;
-	//output logic
-	assign mem_wb = {
-						mem_wb_current_state [48:46],
-						mem_wb_current_state [45:41],
-						mem_wb_current_state [40],
-						mem_wb_current_state [39]  ,
-						mem_wb_current_state [38:34],
-						mem_wb_current_state [33:2],
-                        readed_data_mem, // doesn't need to be clocked, already clocked from the data_memory
-                        mem_wb_current_state [1:0]
-	} ;
+  assign readed_data_mem = (sel_uart_mem) ? readed_data_uart : readed_data_mem_mem;
+  //output logic
+  assign mem_wb = {
+    mem_wb_current_state[48:46],
+    mem_wb_current_state[45:41],
+    mem_wb_current_state[40],
+    mem_wb_current_state[39],
+    mem_wb_current_state[38:34],
+    mem_wb_current_state[33:2],
+    readed_data_mem,  // doesn't need to be clocked, already clocked from the data_memory
+    mem_wb_current_state[1:0]
+  };
 
-	//next state logic
-	assign ctrl_signals_mem = ex_mem [1:0];
-	assign alu_result_mem = ex_mem [101:70] ;
-	assign rd_mem = ex_mem [138:134] ;
-	assign branch_mispredicted_mem = ex_mem [139] ;
-	assign branch_mem = ex_mem[4] ;
-	assign previous_prediction_addr_mem [4:0] = ex_mem[144:140]	;
-	assign funct3_mem = ex_mem [147:145] ;
-	// current sate logic
+  //next state logic
+  assign ctrl_signals_mem = ex_mem[1:0];
+  assign alu_result_mem = ex_mem[101:70];
+  assign rd_mem = ex_mem[138:134];
+  assign branch_mispredicted_mem = ex_mem[139];
+  assign branch_mem = ex_mem[4];
+  assign previous_prediction_addr_mem[4:0] = ex_mem[144:140];
+  assign funct3_mem = ex_mem[147:145];
+  // current sate logic
 
-	always @(posedge clk) begin
-	       // current_state_logic
-		mem_wb_current_state [1:0]   <= ctrl_signals_mem ;
-		mem_wb_current_state [33:2]  <= alu_result_mem ;
-		mem_wb_current_state [38:34] <= rd_mem		;
-		mem_wb_current_state [39]    <= branch_mispredicted_mem ;
-		mem_wb_current_state [40]    <= branch_mem 	;
-		mem_wb_current_state [45:41] <= previous_prediction_addr_mem[4:0] ;
-	    mem_wb_current_state [48:46] <= funct3_mem ;
-	end
-
-
-
-    assign write_data_mem = ((ex_mem [152:148] == mem_wb[70:66]) & mem_wb[1]) ? mem_wb[65:34] : ex_mem[133:102] ; // ex_mem [152:148] is rs2
-                                                                                                                // mem_wb[70:66] is rd
-	data_mem_wrapper data_mem_ (
-	.clk		(clk),
-	.data_addr	(alu_result_mem[13:0]),
-	.w_data_MEM	(write_data_mem),
-	.mem_wren	(ex_mem[2] & sel_dmem_mem),
-	.funct3		(ex_mem [147:145]),
-	.data		(readed_data_mem_mem)
-	);
+  always @(posedge clk) begin
+    // current_state_logic
+    mem_wb_current_state [1:0]   <= ctrl_signals_mem ;
+    mem_wb_current_state [33:2]  <= alu_result_mem ;
+    mem_wb_current_state [38:34] <= rd_mem  ;
+    mem_wb_current_state [39]    <= branch_mispredicted_mem ;
+    mem_wb_current_state [40]    <= branch_mem  ;
+    mem_wb_current_state [45:41] <= previous_prediction_addr_mem[4:0] ;
+    mem_wb_current_state [48:46] <= funct3_mem ;
+  end
 
 
-	// Address decoder
-	//===========================================================================
-	// Address Map
-	//===========================================================================
-	// 0x00000000 - 0x00003FFF  : Instruction Memory (16KB)
-	// 0x00004000 - 0x00006FFF  : Data Memory        (12KB)
-	// 0x80000000 - 0x8000000F  : UART registers
-	// 0x80000010 - 0x8000001F  : GPIO registers
 
-	address_decoder addr_decoder(
-		.addr(ex_mem[101:70]), 		//   [101:70]    = alu_result_ex
-                .sel_imem(sel_imem_mem),
-                .sel_dmem(sel_dmem_mem),
-                .sel_uart(sel_uart_mem),
-                .sel_gpio(sel_gpio_mem)
-	);
+  assign write_data_mem = ((ex_mem [152:148] == mem_wb[70:66]) & mem_wb[1]) ?
+                            mem_wb[65:34] : ex_mem[133:102] ; // ex_mem [152:148] is rs2
+  // mem_wb[70:66] is rd
+  data_mem_wrapper data_mem_ (
+      .clk(clk),
+      .data_addr(alu_result_mem[13:0]),
+      .w_data_MEM(write_data_mem),
+      .mem_wren(ex_mem[2] & sel_dmem_mem),
+      .funct3(ex_mem[147:145]),
+      .data(readed_data_mem_mem)
+  );
 
 
-	// UART
-	uart uart_wrapper(
-		.clk(clk) ,
-        .write_data(ex_mem [133:102]),
-        .data_in_rx(rx),
-		.data_out_tx(tx) ,
-        .mem_write(ex_mem[2]) ,
-        .sel_uart(sel_uart_mem) ,
-        .addr(alu_result_mem[3:0]),
-		.readed_data(readed_data_uart)
-	);
+  // Address decoder
+  //===========================================================================
+  // Address Map
+  //===========================================================================
+  // 0x00000000 - 0x00003FFF  : Instruction Memory (16KB)
+  // 0x00004000 - 0x00006FFF  : Data Memory        (12KB)
+  // 0x80000000 - 0x8000000F  : UART registers
+  // 0x80000010 - 0x8000001F  : GPIO registers
+
+  address_decoder addr_decoder (
+      .addr(ex_mem[101:70]),  //   [101:70]    = alu_result_ex
+      .sel_imem(sel_imem_mem),
+      .sel_dmem(sel_dmem_mem),
+      .sel_uart(sel_uart_mem),
+      .sel_gpio(sel_gpio_mem)
+  );
+
+
+  // UART
+  uart uart_wrapper (
+      .clk(clk),
+      .write_data(ex_mem[133:102]),
+      .data_in_rx(rx),
+      .data_out_tx(tx),
+      .mem_write(ex_mem[2]),
+      .sel_uart(sel_uart_mem),
+      .addr(alu_result_mem[3:0]),
+      .readed_data(readed_data_uart)
+  );
 
   //WB stage
 
 
-	// masking data for loads(either from UART or data_mem)
+  // masking data for loads(either from UART or data_mem)
 
-	mask_loads mask (
+  mask_loads mask (
 
-         .funct3(mem_wb[80:78]),
-         .raw_data(mem_wb[33:2]),
-         .data_addr(mem_wb[35:34]),
+      .funct3(mem_wb[80:78]),
+      .raw_data(mem_wb[33:2]),
+      .data_addr(mem_wb[35:34]),
 
-         .data(loaded_data)
-	);
+      .data(loaded_data)
+  );
 
-	// third mux (write back mux)
-	assign write_back_data  = mem_wb[0] ? loaded_data : mem_wb [65:34] ; // you'll need to change the mem_wb[33:2] to the output of mask_loads
-	assign regwrite_ctrl_wb = mem_wb[1] ;
-
-
+  // third mux (write back mux)
+  assign write_back_data  = mem_wb[0] ? loaded_data : mem_wb [65:34] ;
+  assign regwrite_ctrl_wb = mem_wb[1];
 
 
-	assign instruction_test = instruction ;
-	assign write_back_data_test = write_back_data ;
+
+
+  assign instruction_test = instruction;
+  assign write_back_data_test = write_back_data;
 endmodule
